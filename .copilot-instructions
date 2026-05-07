@@ -1,0 +1,49 @@
+# Copilot Instructions for LaptopEcommerceAndMore
+
+This file defines the architectural standards and coding patterns for GitHub Copilot to ensure consistency in the LaptopEcommerceAndMore solution.
+
+## Project Context
+- **Framework**: ASP.NET Core MVC (Model-View-Controller)
+- **Target Framework**: .NET 10.0
+- **IDE**: Visual Studio Community 2026
+- **Architecture**: Interface-Driven Development with Dependency Injection.
+
+## Core Development Principles
+
+### 1. Interface-First Pattern (CRITICAL)
+Before implementing any new feature or logic:
+- **Step 1**: Define or update the abstraction in the `Interfaces/` folder (e.g., `IDataService.cs`).
+- **Step 2**: Implement the logic in the corresponding class within the `Services/` folder (e.g., `InMemoryDataService.cs`).
+- **Step 3**: Inject the Interface (not the concrete class) into Controllers or ViewComponents.
+
+### 2. Separation of Concerns
+- **Controllers**: Keep them thin. Only handle routing, Model Binding, and returning Views.
+- **Services**: All business logic (price calculations, cart logic, data filtering) must stay here.
+- **Models**: Use POCO classes for data entities. Prepare for Entity Framework Core migration.
+- **Mock Data**: Use `InMemoryDataService` for current development. Ensure data structures are SQL-compatible for future ERD mapping.
+
+### 3. Coding Style
+- Use **Async/Await** for all I/O bound operations (even if currently using In-Memory data).
+- Use **Primary Constructors** (C# 12+) for Dependency Injection in Services and Controllers.
+- Follow PascalCase for methods and properties; camelCase for private fields (with `_` prefix).
+- Target modern C# 13/.NET 10 syntax and features.
+
+## Folder Structure Mapping
+Ensure all new files follow this map:
+- `Controllers/` -> MVC Controllers only.
+- `Interfaces/` -> All Service Interfaces.
+- `Services/` -> Service Implementations (currently In-Memory).
+- `Models/` -> Domain Entities and ViewModels.
+- `Views/` -> CSHTML files (organized by Controller sub-folders).
+- `ViewComponents/` -> Reusable UI logic components.
+- `wwwroot/` -> Static assets (images, css, js).
+
+## Instructions for Feature Requests
+When I ask for a new feature:
+1. Identify which Interface needs a new method.
+2. Update the Mock Service with dummy data.
+3. Show how to call the service from the Controller.
+4. Provide the updated HTML/Tag Helpers for the View if necessary.
+
+---
+*Note: We are in the "Vibe Coding" phase focusing on UI/Logic flow before committing to a hard SQL Schema (ERD). Keep the data structures flexible but logical.*

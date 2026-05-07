@@ -1,17 +1,9 @@
 using WebActionResults1923050471.Models;
+using WebActionResults1923050471.Interfaces;
 using System.Text.Json;
 
 namespace WebActionResults1923050471.Services
 {
-    public interface ICartService
-    {
-        ShoppingCart GetCart(HttpContext httpContext, int accountId);
-        void AddToCart(HttpContext httpContext, int accountId, CartItem item);
-        void RemoveFromCart(HttpContext httpContext, int accountId, int productId);
-        void UpdateCart(HttpContext httpContext, int accountId, ShoppingCart cart);
-        void ClearCart(HttpContext httpContext, int accountId);
-    }
-
     public class CartService : ICartService
     {
         private const string CartSessionKey = "ShoppingCart_";
