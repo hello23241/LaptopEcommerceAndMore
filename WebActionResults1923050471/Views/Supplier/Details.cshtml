@@ -1,0 +1,21 @@
+@model WebActionResults1923050471.Models.Supplier
+
+@{
+    ViewData["Title"] = "Supplier Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h1>@Model.Name</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <p><strong>ID:</strong> @Model.Id</p>
+            <p><strong>Contact:</strong> @Model.ContactInfo</p>
+            <p><strong>Address:</strong> @Model.Address</p>
+        </div>
+    </div>
+
+    <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning mt-3">Edit</a>
+    <a href="@Url.Action("Index")" class="btn btn-secondary mt-3">Back to List</a>
+</div>

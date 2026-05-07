@@ -1,0 +1,24 @@
+@model WebActionResults1923050471.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h1>@Model.Name</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <p><strong>ID:</strong> @Model.Id</p>
+            <p><strong>Description:</strong> @Model.Description</p>
+            <p><strong>Price:</strong> $@Model.Price.ToString("F2")</p>
+            <p><strong>Quantity:</strong> @Model.Quantity</p>
+            <p><strong>Category ID:</strong> @Model.CategoryId</p>
+            <p><strong>Supplier ID:</strong> @Model.SupplierId</p>
+        </div>
+    </div>
+
+    <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning mt-3">Edit</a>
+    <a href="@Url.Action("Index")" class="btn btn-secondary mt-3">Back to List</a>
+</div>

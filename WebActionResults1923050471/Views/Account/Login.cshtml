@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Login";
+    ViewData["ShowSidebar"] = false;
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-lg">
+                    <div class="card-header" style="background-color: #D10024; color: white; padding: 20px;">
+                        <h3 class="mb-0" style="color: white;">Login to Your Account</h3>
+                    </div>
+                    <div class="card-body" style="padding: 30px;">
+                        @if (ViewBag.ErrorMessage != null)
+                        {
+                            <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+                        }
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        }
+
+                        <form method="post">
+                            <div class="form-group mb-3">
+                                <label for="userName" class="form-label" style="font-weight: 600; color: #2B2D42;">Username</label>
+                                <input type="text" name="userName" id="userName" class="form-control" required placeholder="Enter your username" style="border: 1px solid #E4E7ED; padding: 10px 15px; border-radius: 4px;" />
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="password" class="form-label" style="font-weight: 600; color: #2B2D42;">Password</label>
+                                <input type="password" name="password" id="password" class="form-control" required placeholder="Enter your password" style="border: 1px solid #E4E7ED; padding: 10px 15px; border-radius: 4px;" />
+                            </div>
+
+                            <button type="submit" class="btn w-100 mb-3" style="background-color: #D10024; color: white; padding: 12px; font-weight: 700; border-radius: 4px; border: none; text-transform: uppercase; transition: 0.2s all;">Login</button>
+                        </form>
+
+                        <p class="text-center" style="color: #666; font-size: 14px;">Don't have an account? <a href="@Url.Action("Register", "Account")" style="color: #D10024; font-weight: 600;">Register here</a></p>
+
+                        <hr style="background-color: #E4E7ED; margin: 25px 0;" />
+
+                        <p style="color: #666; font-size: 12px; font-weight: 600;">Demo Credentials:</p>
+                        <ul style="font-size: 12px; color: #666; margin-bottom: 0;">
+                            <li>Username: <strong>admin</strong> / Password: <strong>admin123</strong></li>
+                            <li>Username: <strong>user1</strong> / Password: <strong>user123</strong></li>
+                            <li>Username: <strong>user2</strong> / Password: <strong>user456</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

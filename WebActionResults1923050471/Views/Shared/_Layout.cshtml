@@ -1,0 +1,147 @@
+@{
+    var userId = Context.Session.GetInt32("UserId");
+    var fullName = Context.Session.GetString("FullName");
+    var showSidebar = ViewData["ShowSidebar"] as bool? ?? true;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebActionResults1923050471</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebActionResults1923050471.styles.css" asp-append-version="true" />
+</head>
+<body style="padding-top: 70px !important;">
+    <header style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 9999 !important; width: 100% !important;">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 9999 !important; width: 100% !important; margin-bottom: 0 !important;">
+            <div class="container-fluid" style="z-index: 9999 !important; position: relative !important;">
+                <a class="navbar-brand" href="@Url.Action("Index", "Product")" style="z-index: 9999 !important; position: relative !important; cursor: pointer !important;">WebActionResults1923050471</a>
+                <button class="navbar-toggler" type="button" style="display: none !important;">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse show d-sm-inline-flex justify-content-between" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                    <ul class="navbar-nav flex-grow-1" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                        <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                            <a class="nav-link text-dark" href="/" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Home</a>
+                        </li>
+                        <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Product")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Products</a>
+                        </li>
+                        <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Category")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Categories</a>
+                        </li>
+                        <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Supplier")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Suppliers</a>
+                        </li>
+                        <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                            <a class="nav-link text-dark" href="/Privacy" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Privacy</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                        @if (userId.HasValue)
+                        {
+                            <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                                <a class="nav-link text-success" href="@Url.Action("Index", "Cart")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">
+                                    <strong>🛒 Cart</strong>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                                <a class="nav-link dropdown-toggle text-info" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">
+                                    <strong>👤 @fullName</strong>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="z-index: 10000 !important; pointer-events: auto !important;">
+                                    <li><a class="dropdown-item" href="@Url.Action("Profile", "Account")" style="pointer-events: auto !important; cursor: pointer !important;">Profile</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Edit", "Account", new { id = userId })" style="pointer-events: auto !important; cursor: pointer !important;">Settings</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")" style="pointer-events: auto !important; cursor: pointer !important;">Logout</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                                @if (currentAction == "Login" && currentController == "Account")
+                                {
+                                    <span class="nav-link text-primary" style="opacity: 0.5; cursor: not-allowed; z-index: 9999 !important; position: relative !important; display: block !important;">Login</span>
+                                }
+                                else
+                                {
+                                    <a class="nav-link text-primary" href="@Url.Action("Login", "Account")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Login</a>
+                                }
+                            </li>
+                            <li class="nav-item" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important;">
+                                @if (currentAction == "Register" && currentController == "Account")
+                                {
+                                    <span class="nav-link text-success" style="opacity: 0.5; cursor: not-allowed; z-index: 9999 !important; position: relative !important; display: block !important;">Register</span>
+                                }
+                                else
+                                {
+                                    <a class="nav-link text-success" href="@Url.Action("Register", "Account")" style="z-index: 9999 !important; position: relative !important; pointer-events: auto !important; display: block !important; cursor: pointer !important;">Register</a>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid" style="padding-top: 20px; margin-top: 0;">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="row">
+            @if (showSidebar)
+            {
+                <div class="col-md-3">
+                    @await Component.InvokeAsync("CategoryMenu")
+                </div>
+                <div class="col-md-9">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
+                </div>
+            }
+            else
+            {
+                <div class="col-12">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
+                </div>
+            }
+        </div>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - WebActionResults1923050471 - <a asp-controller="Product" asp-action="Index">Home</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Force navbar links to be clickable
+        document.querySelectorAll('.navbar-nav a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var href = this.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault();
+                    window.location.href = href;
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
