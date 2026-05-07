@@ -3,18 +3,13 @@ using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.ViewComponents
 {
-    public class CategoryMenuViewComponent : ViewComponent
+    public class CategoryMenuViewComponent(IDataService dataService) : ViewComponent
     {
-        private readonly IDataService _dataService;
-
-        public CategoryMenuViewComponent(IDataService dataService)
-        {
-            _dataService = dataService;
-        }
+        private readonly IDataService _dataService = dataService;
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var categories = _dataService.GetAllCategories();
+            var categories = await _dataService.GetAllCategoriesAsync();
             return View(categories);
         }
     }

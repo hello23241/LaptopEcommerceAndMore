@@ -4,45 +4,53 @@ using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController(IDataService dataService) : Controller
     {
-        private readonly IDataService _dataService;
+        private readonly IDataService _dataService = dataService;
 
-        public AccountController(IDataService dataService)
+        public async Task<IActionResult> Index()
         {
-            _dataService = dataService;
-        }
-
-        public IActionResult Index()
-        {
-            var accounts = _dataService.GetAllAccounts();
+            var accounts = await _dataService.GetAllAccountsAsync();
             return View(accounts);
         }
 
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(string userName, string password)
+        public async Task<IActionResult> Login(string userName, string password, string? returnUrl = null)
         {
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 ModelState.AddModelError("", "Username and password are required");
+                ViewData["ReturnUrl"] = returnUrl;
                 return View();
             }
 
-            if (_dataService.ValidateLogin(userName, password))
+            if (await _dataService.ValidateLoginAsync(userName, password))
             {
-                var account = _dataService.GetAccountByUserName(userName);
+                var account = await _dataService.GetAccountByUserNameAsync(userName);
+                if (account == null)
+                {
+                    ModelState.AddModelError("", "Invalid username or password");
+                    ViewData["ReturnUrl"] = returnUrl;
+                    return View();
+                }
                 HttpContext.Session.SetInt32("UserId", account.Id);
                 HttpContext.Session.SetString("UserName", account.UserName);
                 HttpContext.Session.SetString("FullName", account.FullName);
+                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return LocalRedirect(returnUrl);
+                }
                 return RedirectToAction("Index", "Product");
             }
 
             ModelState.AddModelError("", "Invalid username or password");
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
@@ -52,7 +60,7 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(Account account)
+        public async Task<IActionResult> Register(Account account)
         {
             if (string.IsNullOrEmpty(account.UserName) || string.IsNullOrEmpty(account.Password))
             {
@@ -60,36 +68,49 @@ namespace WebActionResults1923050471.Controllers
                 return View(account);
             }
 
-            if (_dataService.GetAccountByUserName(account.UserName) != null)
+            if (await _dataService.GetAccountByUserNameAsync(account.UserName) != null)
             {
                 ModelState.AddModelError("", "Username already exists");
                 return View(account);
             }
 
-            _dataService.AddAccount(account);
+            await _dataService.AddAccountAsync(account);
             return RedirectToAction("Login");
         }
 
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
                 return RedirectToAction("Login");
 
-            var account = _dataService.GetAccountById(userId.Value);
+            var account = await _dataService.GetAccountByIdAsync(userId.Value);
             if (account == null)
                 return NotFound();
 
             return View(account);
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Account()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login");
+
+            var account = await _dataService.GetAccountByIdAsync(userId.Value);
+            if (account == null)
+                return NotFound();
+
+            return View(account);
+        }
+
+        public async Task<IActionResult> Edit(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null || userId != id)
                 return RedirectToAction("Login");
 
-            var account = _dataService.GetAccountById(id);
+            var account = await _dataService.GetAccountByIdAsync(id);
             if (account == null)
                 return NotFound();
 
@@ -97,7 +118,7 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, Account account)
+        public async Task<IActionResult> Edit(int id, Account account)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null || userId != id)
@@ -108,7 +129,7 @@ namespace WebActionResults1923050471.Controllers
 
             if (ModelState.IsValid)
             {
-                _dataService.UpdateAccount(account);
+                await _dataService.UpdateAccountAsync(account);
                 HttpContext.Session.SetString("FullName", account.FullName);
                 return RedirectToAction("Profile");
             }
@@ -122,18 +143,18 @@ namespace WebActionResults1923050471.Controllers
             return RedirectToAction("Index", "Product");
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var account = _dataService.GetAccountById(id);
+            var account = await _dataService.GetAccountByIdAsync(id);
             if (account == null)
                 return NotFound();
 
             return View(account);
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var account = _dataService.GetAccountById(id);
+            var account = await _dataService.GetAccountByIdAsync(id);
             if (account == null)
                 return NotFound();
 
@@ -141,9 +162,9 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _dataService.DeleteAccount(id);
+            await _dataService.DeleteAccountAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,0 +1,74 @@
+@model WebActionResults1923050471.Controllers.CompareViewModel
+
+@{
+    ViewData["Title"] = "Compare Products";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Compare Products</h1>
+
+    @if (TempData["CompareError"] != null)
+    {
+        <div class="alert alert-warning">@TempData["CompareError"]</div>
+    }
+
+    @if (Model.Products.Count == 0)
+    {
+        <div class="alert alert-info">No products to compare yet.</div>
+        <a class="btn btn-secondary" href="@Url.Action("Index", "Product")">Back to Products</a>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Feature</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <th>@product.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>Price</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>$@product.Price.ToString("F2")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Description</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Quantity</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Quantity</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Category</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.CategoryId</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Supplier</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.SupplierId</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -4,16 +4,10 @@ using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.Controllers
 {
-    public class CartController : Controller
+    public class CartController(IDataService dataService, ICartService cartService) : Controller
     {
-        private readonly IDataService _dataService;
-        private readonly ICartService _cartService;
-
-        public CartController(IDataService dataService, ICartService cartService)
-        {
-            _dataService = dataService;
-            _cartService = cartService;
-        }
+        private readonly IDataService _dataService = dataService;
+        private readonly ICartService _cartService = cartService;
 
         private int GetUserId()
         {
@@ -25,12 +19,12 @@ namespace WebActionResults1923050471.Controllers
             return userId.Value;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
                 var userId = GetUserId();
-                var cart = _cartService.GetCart(HttpContext, userId);
+                var cart = await _cartService.GetCartAsync(HttpContext, userId);
                 return View(cart);
             }
             catch
@@ -40,11 +34,11 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddToCart(int productId, int quantity = 1)
+        public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
             try
             {
-                var product = _dataService.GetProductById(productId);
+                var product = await _dataService.GetProductByIdAsync(productId);
                 if (product == null)
                     return NotFound();
 
@@ -57,7 +51,7 @@ namespace WebActionResults1923050471.Controllers
                     Quantity = quantity
                 };
 
-                _cartService.AddToCart(HttpContext, userId, cartItem);
+                await _cartService.AddToCartAsync(HttpContext, userId, cartItem);
                 return RedirectToAction("Index");
             }
             catch
@@ -67,12 +61,12 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult RemoveFromCart(int productId)
+        public async Task<IActionResult> RemoveFromCart(int productId)
         {
             try
             {
                 var userId = GetUserId();
-                _cartService.RemoveFromCart(HttpContext, userId, productId);
+                await _cartService.RemoveFromCartAsync(HttpContext, userId, productId);
                 return RedirectToAction("Index");
             }
             catch
@@ -82,14 +76,14 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateQuantity(int productId, int quantity)
+        public async Task<IActionResult> UpdateQuantity(int productId, int quantity)
         {
             try
             {
                 var userId = GetUserId();
-                var cart = _cartService.GetCart(HttpContext, userId);
-                cart.UpdateQuantity(productId, quantity);
-                _cartService.UpdateCart(HttpContext, userId, cart);
+                var cart = await _cartService.GetCartAsync(HttpContext, userId);
+                await _cartService.UpdateQuantityAsync(cart, productId, quantity);
+                await _cartService.UpdateCartAsync(HttpContext, userId, cart);
                 return RedirectToAction("Index");
             }
             catch
@@ -99,12 +93,12 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult Checkout()
+        public async Task<IActionResult> Checkout()
         {
             try
             {
                 var userId = GetUserId();
-                var cart = _cartService.GetCart(HttpContext, userId);
+                var cart = await _cartService.GetCartAsync(HttpContext, userId);
                 
                 if (!cart.Items.Any())
                 {
@@ -113,7 +107,7 @@ namespace WebActionResults1923050471.Controllers
                 }
 
                 // Here you would process the order
-                _cartService.ClearCart(HttpContext, userId);
+                await _cartService.ClearCartAsync(HttpContext, userId);
                 TempData["SuccessMessage"] = "Order placed successfully!";
                 return RedirectToAction("Index", "Product");
             }
@@ -123,12 +117,12 @@ namespace WebActionResults1923050471.Controllers
             }
         }
 
-        public IActionResult ClearCart()
+        public async Task<IActionResult> ClearCart()
         {
             try
             {
                 var userId = GetUserId();
-                _cartService.ClearCart(HttpContext, userId);
+                await _cartService.ClearCartAsync(HttpContext, userId);
                 return RedirectToAction("Index");
             }
             catch

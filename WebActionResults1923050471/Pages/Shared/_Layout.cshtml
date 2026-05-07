@@ -1,6 +1,8 @@
 ﻿@{
-    var userId = Context.Session.GetInt32("UserId");
-    var fullName = Context.Session.GetString("FullName");
+	var userId = Context.Session.GetInt32("UserId");
+	var fullName = Context.Session.GetString("FullName");
+	var userName = Context.Session.GetString("UserName");
+	var currentPath = Context.Request.Path + Context.Request.QueryString;
 }
 
 <!DOCTYPE html>
@@ -42,9 +44,21 @@
 					<li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
 					<li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
 				</ul>
-				<ul class="header-links pull-right">
+                <ul class="header-links pull-right">
 					<li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-					<li><a href="/Account/Login"><i class="fa fa-user-o"></i> My Account</a></li>
+                       <li><a href="/Compare"><i class="fa fa-exchange"></i> Compare</a></li>
+					@if (userId.HasValue)
+					{
+						<li>
+							<a href="@Url.Action("Account", "Account")"><i class="fa fa-user-o"></i> @(string.IsNullOrWhiteSpace(userName) ? fullName : userName)</a>
+						</li>
+					}
+					else
+					{
+						<li>
+							<a href="@Url.Action("Login", "Account", new { returnUrl = currentPath })"><i class="fa fa-user-o"></i> My Account</a>
+						</li>
+					}
 				</ul>
 			</div>
 		</div>
@@ -81,58 +95,11 @@
 					<!-- /SEARCH BAR -->
 					<!-- ACCOUNT -->
 					<div class="col-md-3 clearfix">
-						<div class="header-ctn">
-							<!-- Wishlist -->
-							<div>
-								<a href="#">
-									<i class="fa fa-heart-o"></i>
-									<span>Your Wishlist</span>
-									<div class="qty">2</div>
-								</a>
-							</div>
-							<!-- /Wishlist -->
-							<!-- Cart -->
-							<div class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-									<i class="fa fa-shopping-cart"></i>
-									<span>Your Cart</span>
-									<div class="qty">3</div>
-								</a>
-								<div class="cart-dropdown">
-									<div class="cart-list">
-										<div class="product-widget">
-												<div class="product-img">
-													<img src="~/img/product01.png" alt="">
-												</div>
-												<div class="product-body">
-													<h3 class="product-name"><a href="#">product name goes here</a></h3>
-													<h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-												</div>
-												<button class="delete"><i class="fa fa-close"></i></button>
-											</div>
+                    <div class="header-ctn">
+						<!-- Wishlist + Cart -->
+						@await Component.InvokeAsync("HeaderBadges")
+						<!-- /Wishlist + Cart -->
 
-											<div class="product-widget">
-												<div class="product-img">
-													<img src="~/img/product02.png" alt="">
-												</div>
-												<div class="product-body">
-													<h3 class="product-name"><a href="#">product name goes here</a></h3>
-													<h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-												</div>
-												<button class="delete"><i class="fa fa-close"></i></button>
-											</div>
-									</div>
-									<div class="cart-summary">
-										<small>3 Item(s) selected</small>
-										<h5>SUBTOTAL: $2940.00</h5>
-									</div>
-									<div class="cart-btns">
-										<a asp-controller="Cart" asp-action="Index">View Cart</a>
-										<a asp-page="/Checkout">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
-									</div>
-								</div>
-							</div>
-							<!-- /Cart -->
 							<!-- Menu Toogle -->
 							<div class="menu-toggle">
 								<a href="#">
@@ -244,6 +211,25 @@
 	<script src="~/js/jquery.zoom.min.js"></script>
 	<script src="~/js/main.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
+	<script>
+		document.addEventListener('submit', function (event) {
+			var form = event.target;
+			if (!form.classList.contains('compare-button')) {
+				return;
+			}
+			event.preventDefault();
+			var formData = new FormData(form);
+			fetch(form.action, {
+				method: 'POST',
+				body: formData,
+				headers: { 'X-Requested-With': 'XMLHttpRequest' }
+			})
+				.then(function (response) { return response.text(); })
+				.then(function (html) {
+					form.outerHTML = html;
+				});
+		});
+	</script>
 
 	@await RenderSectionAsync("Scripts", required: false)
 </body>

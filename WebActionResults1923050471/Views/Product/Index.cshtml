@@ -42,6 +42,7 @@
                             <a href="@Url.Action("Details", new { id = product.Id })" class="btn btn-sm btn-info">View</a>
                             <a href="@Url.Action("Edit", new { id = product.Id })" class="btn btn-sm btn-warning">Edit</a>
                             <a href="@Url.Action("Delete", new { id = product.Id })" class="btn btn-sm btn-danger">Delete</a>
+                            @await Component.InvokeAsync("CompareButton", new { productId = product.Id })
                             @if (userId.HasValue)
                             {
                                 <form asp-controller="Cart" asp-action="AddToCart" method="post" style="display: inline;">
@@ -52,7 +53,7 @@
                             }
                             else
                             {
-                                <a href="@Url.Action("Login", "Account")" class="btn btn-sm btn-outline-success">Add to Cart</a>
+                                <a href="@Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString })" class="btn btn-sm btn-outline-success">Add to Cart</a>
                             }
                         </td>
                     </tr>

@@ -15,6 +15,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IHeaderBadgeService, HeaderBadgeService>();
+builder.Services.AddScoped<ICompareService, CompareService>();
 
 var app = builder.Build();
 
@@ -36,7 +39,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 app.MapControllers();
 app.MapStaticAssets();
 app.MapRazorPages()

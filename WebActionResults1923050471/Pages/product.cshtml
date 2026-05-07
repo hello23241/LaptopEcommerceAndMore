@@ -145,34 +145,46 @@
 			<div class="col-md-12">
 				<div id="product-tab">
 					<!-- product tab nav -->
-					<ul class="tab-nav">
-						<li class="active"><a data-toggle="tab" href="#tab1">Description</a></li>
-						<li><a data-toggle="tab" href="#tab2">Details</a></li>
-						<li><a data-toggle="tab" href="#tab3">Reviews (3)</a></li>
+                    <ul class="tab-nav">
+						<li class="active"><a data-bs-toggle="tab" href="#tab1">Description</a></li>
+						<li><a data-bs-toggle="tab" href="#tab2">Details</a></li>
+						<li><a data-bs-toggle="tab" href="#tab3">Reviews (3)</a></li>
 					</ul>
 					<!-- /product tab nav -->
 					<!-- product tab content -->
 					<div class="tab-content">
 						<!-- tab1  -->
-						<div id="tab1" class="tab-pane fade in active">
+                        <div id="tab1" class="tab-pane fade show active">
 							<div class="row">
 								<div class="col-md-12">
-									<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+									<p>Get premium performance with a clean, modern design made for everyday work, school, and entertainment.</p>
+									<ul>
+										<li>Fast boot, responsive apps, and smooth multitasking</li>
+										<li>Vivid display optimized for long sessions</li>
+										<li>Durable build with a comfortable keyboard</li>
+									</ul>
 								</div>
 							</div>
 						</div>
 						<!-- /tab1  -->
 						<!-- tab2  -->
-						<div id="tab2" class="tab-pane fade in">
+                        <div id="tab2" class="tab-pane fade">
 							<div class="row">
 								<div class="col-md-12">
-									<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+									<ul>
+										<li>Display: 15.6" FHD, anti-glare</li>
+										<li>Processor: 12th Gen Intel Core</li>
+										<li>Memory: 16GB DDR5</li>
+										<li>Storage: 512GB NVMe SSD</li>
+										<li>Graphics: Integrated UHD</li>
+										<li>Battery: Up to 10 hours</li>
+									</ul>
 								</div>
 							</div>
 						</div>
 						<!-- /tab2  -->
 						<!-- tab3  -->
-						<div id="tab3" class="tab-pane fade in">
+                        <div id="tab3" class="tab-pane fade">
 							<div class="row">
 								<!-- Rating -->
 								<div class="col-md-3">
@@ -526,3 +538,33 @@
 	<!-- /container -->
 </div>
 <!-- /NEWSLETTER -->
+
+@section Scripts {
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var tabLinks = document.querySelectorAll('#product-tab .tab-nav a');
+			var tabPanes = document.querySelectorAll('#product-tab .tab-content .tab-pane');
+
+			tabLinks.forEach(function (link) {
+				link.addEventListener('click', function (event) {
+					event.preventDefault();
+					var target = link.getAttribute('href');
+					if (!target) {
+						return;
+					}
+
+					tabLinks.forEach(function (navLink) {
+						navLink.parentElement?.classList.remove('active');
+					});
+					link.parentElement?.classList.add('active');
+
+					tabPanes.forEach(function (pane) {
+						var matches = '#' + pane.id === target;
+						pane.classList.toggle('show', matches);
+						pane.classList.toggle('active', matches);
+					});
+				});
+			});
+		});
+	</script>
+}

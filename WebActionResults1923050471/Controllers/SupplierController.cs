@@ -4,24 +4,19 @@ using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.Controllers
 {
-    public class SupplierController : Controller
+    public class SupplierController(IDataService dataService) : Controller
     {
-        private readonly IDataService _dataService;
+        private readonly IDataService _dataService = dataService;
 
-        public SupplierController(IDataService dataService)
+        public async Task<IActionResult> Index()
         {
-            _dataService = dataService;
-        }
-
-        public IActionResult Index()
-        {
-            var suppliers = _dataService.GetAllSuppliers();
+            var suppliers = await _dataService.GetAllSuppliersAsync();
             return View(suppliers);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var supplier = _dataService.GetSupplierById(id);
+            var supplier = await _dataService.GetSupplierByIdAsync(id);
             if (supplier == null)
                 return NotFound();
             return View(supplier);
@@ -33,50 +28,50 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Supplier supplier)
+        public async Task<IActionResult> Create(Supplier supplier)
         {
             if (ModelState.IsValid)
             {
-                _dataService.AddSupplier(supplier);
+                await _dataService.AddSupplierAsync(supplier);
                 return RedirectToAction(nameof(Index));
             }
             return View(supplier);
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var supplier = _dataService.GetSupplierById(id);
+            var supplier = await _dataService.GetSupplierByIdAsync(id);
             if (supplier == null)
                 return NotFound();
             return View(supplier);
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, Supplier supplier)
+        public async Task<IActionResult> Edit(int id, Supplier supplier)
         {
             if (id != supplier.Id)
                 return BadRequest();
 
             if (ModelState.IsValid)
             {
-                _dataService.UpdateSupplier(supplier);
+                await _dataService.UpdateSupplierAsync(supplier);
                 return RedirectToAction(nameof(Index));
             }
             return View(supplier);
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var supplier = _dataService.GetSupplierById(id);
+            var supplier = await _dataService.GetSupplierByIdAsync(id);
             if (supplier == null)
                 return NotFound();
             return View(supplier);
         }
 
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _dataService.DeleteSupplier(id);
+            await _dataService.DeleteSupplierAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,90 +1,94 @@
 using Microsoft.AspNetCore.Mvc;
-using WebActionResults1923050471.Models;
+using WebActionResults1923050471.Models; // Ensure models namespace is used
 using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.Controllers
 {
-    public class ProductController : Controller
+    public class ProductController(IDataService dataService) : Controller
     {
-        private readonly IDataService _dataService;
+        private readonly IDataService _dataService = dataService;
 
-        public ProductController(IDataService dataService)
-        {
-            _dataService = dataService;
-        }
+        private static IReadOnlyList<ProductDetailTab> GetDetailTabs() =>
+            new List<ProductDetailTab>
+            {
+                new("Description", "Designed for everyday performance with a clean, modern build and smooth multitasking."),
+                new("Details", "Display: 15.6\" FHD | Memory: 16GB | Storage: 512GB SSD | Battery: Up to 10 hours"),
+                new("Reviews", "Reviews are coming soon. Check back after launch.")
+            };
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var products = _dataService.GetAllProducts();
+            var products = await _dataService.GetAllProductsAsync();
             return View(products);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var product = _dataService.GetProductById(id);
+            var product = await _dataService.GetProductByIdAsync(id);
             if (product == null)
                 return NotFound();
-            return View(product);
+            var viewModel = new ProductDetailsViewModel(product, GetDetailTabs());
+            return View(viewModel);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = _dataService.GetAllCategories();
-            ViewBag.Suppliers = _dataService.GetAllSuppliers();
+            ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
+            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
+        public async Task<IActionResult> Create(Product product)
         {
             if (ModelState.IsValid)
             {
-                _dataService.AddProduct(product);
+                await _dataService.AddProductAsync(product);
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Categories = _dataService.GetAllCategories();
-            ViewBag.Suppliers = _dataService.GetAllSuppliers();
+            ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
+            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
             return View(product);
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var product = _dataService.GetProductById(id);
+            var product = await _dataService.GetProductByIdAsync(id);
             if (product == null)
                 return NotFound();
-            ViewBag.Categories = _dataService.GetAllCategories();
-            ViewBag.Suppliers = _dataService.GetAllSuppliers();
+            ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
+            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
             return View(product);
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, Product product)
+        public async Task<IActionResult> Edit(int id, Product product)
         {
             if (id != product.Id)
                 return BadRequest();
 
             if (ModelState.IsValid)
             {
-                _dataService.UpdateProduct(product);
+                await _dataService.UpdateProductAsync(product);
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Categories = _dataService.GetAllCategories();
-            ViewBag.Suppliers = _dataService.GetAllSuppliers();
+            ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
+            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
             return View(product);
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var product = _dataService.GetProductById(id);
+            var product = await _dataService.GetProductByIdAsync(id);
             if (product == null)
                 return NotFound();
             return View(product);
         }
 
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _dataService.DeleteProduct(id);
+            await _dataService.DeleteProductAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }
