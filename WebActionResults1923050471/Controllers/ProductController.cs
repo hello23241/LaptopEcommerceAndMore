@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WebActionResults1923050471.Models; // Ensure models namespace is used
+using WebActionResults1923050471.ViewModels;
 using WebActionResults1923050471.Interfaces;
 
 namespace WebActionResults1923050471.Controllers
@@ -43,7 +44,7 @@ namespace WebActionResults1923050471.Controllers
         public async Task<IActionResult> Create()
         {
             ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
-            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
+            ViewBag.Brands = await _dataService.GetAllBrandsAsync();
             return View();
         }
 
@@ -73,7 +74,7 @@ namespace WebActionResults1923050471.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Products product)
         {
-            if (id != product.Id)
+            if (id != product.ProductID)
                 return BadRequest();
 
             if (ModelState.IsValid)

@@ -1,4 +1,5 @@
 using WebActionResults1923050471.Models;
+using WebActionResults1923050471.ViewModels
 using WebActionResults1923050471.Interfaces;
 using System.Text.Json;
 
@@ -16,10 +17,10 @@ namespace WebActionResults1923050471.Services
 
             if (string.IsNullOrEmpty(cartJson))
             {
-                return Task.FromResult(new ShoppingCart { AccountId = accountId, TotalItems = 0, TotalPrice = 0m });
+                return Task.FromResult(new ShoppingCart { UserID = accountId, TotalItems = 0, TotalPrice = 0m });
             }
 
-            var cart = JsonSerializer.Deserialize<ShoppingCart>(cartJson) ?? new ShoppingCart { AccountId = accountId, TotalItems = 0, TotalPrice = 0m };
+            var cart = JsonSerializer.Deserialize<ShoppingCart>(cartJson) ?? new ShoppingCart { UserID = accountId, TotalItems = 0, TotalPrice = 0m };
             cart.TotalItems = cart.Items.Sum(x => x.Quantity);
             cart.TotalPrice = cart.Items.Sum(x => x.Subtotal);
             return Task.FromResult(cart);
@@ -59,7 +60,7 @@ namespace WebActionResults1923050471.Services
         public Task AddItemAsync(ShoppingCart cart, CartItem item)
         {
             item.Subtotal = item.Price * item.Quantity;
-            var existingItem = cart.Items.FirstOrDefault(x => x.ProductId == item.ProductId);
+            var existingItem = cart.Items.FirstOrDefault(x => x.ProductID == item.ProductID);
             if (existingItem != null)
             {
                 existingItem.Quantity += item.Quantity;
@@ -78,7 +79,7 @@ namespace WebActionResults1923050471.Services
 
         public Task RemoveItemAsync(ShoppingCart cart, int productId)
         {
-            cart.Items.RemoveAll(x => x.ProductId == productId);
+            cart.Items.RemoveAll(x => x.ProductID == productId);
             cart.TotalItems = cart.Items.Sum(x => x.Quantity);
             cart.TotalPrice = cart.Items.Sum(x => x.Subtotal);
             return Task.CompletedTask;
@@ -86,12 +87,12 @@ namespace WebActionResults1923050471.Services
 
         public Task UpdateQuantityAsync(ShoppingCart cart, int productId, int quantity)
         {
-            var item = cart.Items.FirstOrDefault(x => x.ProductId == productId);
+            var item = cart.Items.FirstOrDefault(x => x.ProductID == productId);
             if (item != null)
             {
                 if (quantity <= 0)
                 {
-                    cart.Items.RemoveAll(x => x.ProductId == productId);
+                    cart.Items.RemoveAll(x => x.ProductID == productId);
                 }
                 else
                 {

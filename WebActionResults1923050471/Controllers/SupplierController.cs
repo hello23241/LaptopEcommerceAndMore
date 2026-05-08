@@ -10,16 +10,16 @@ namespace WebActionResults1923050471.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var suppliers = await _dataService.GetAllSuppliersAsync();
-            return View(suppliers);
+            var brand = await _dataService.GetAllBrandsAsync();
+            return View(brand);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var supplier = await _dataService.GetSupplierByIdAsync(id);
-            if (supplier == null)
+            var brand = await _dataService.GetBrandByIdAsync(id);
+            if (brand == null)
                 return NotFound();
-            return View(supplier);
+            return View(brand);
         }
 
         public IActionResult Create()
@@ -49,7 +49,7 @@ namespace WebActionResults1923050471.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Brands brand)
         {
-            if (id != brand.Id)
+            if (id != brand.BrandID)
                 return BadRequest();
 
             if (ModelState.IsValid)
