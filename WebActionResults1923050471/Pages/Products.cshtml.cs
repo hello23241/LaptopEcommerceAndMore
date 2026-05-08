@@ -8,7 +8,7 @@ namespace WebActionResults1923050471.Pages
     public class ProductsModel(IDataService dataService) : PageModel
     {
         private readonly IDataService _dataService = dataService;
-        public List<Product> Products { get; private set; } = new();
+        public List<Products> Products { get; private set; } = new();
         public int PageNumber { get; private set; }
         public int TotalPages { get; private set; }
 

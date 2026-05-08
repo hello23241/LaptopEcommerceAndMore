@@ -1,0 +1,47 @@
+Instructions for Database Entity & DbContext Initialization
+Context
+You are a Senior .NET Backend Developer. I have a completed ERD for a laptop e-commerce project called "999 Laptop". Your task is to implement the Code-First approach using Entity Framework Core.
+
+Core Database Schema Requirements
+Users Table:
+
+UserID (int, PK, Identity).
+
+Username (varchar, 5-10 chars, regex: ^[a-z0-9]+$).
+
+PasswordHash (string, required).
+
+Role (default: "Customer").
+
+Product System:
+
+Products: Main table containing common fields (ProductID, ProductName, BrandID, CategoryID, BasePrice, StockQuantity, ProductImage, Status).
+
+ProductDetails: Contains laptop-specific specs (CPU, RAM, GPU, Display, Storage, Battery, Weight, OS).
+
+Brands & Categories: Standard lookup tables. Categories must support hierarchical structure via ParentID.
+
+Relationships (Crucial):
+
+Products & ProductDetails: One-to-One (1:1) relationship. ProductDetails.ProductID is both PK and FK.
+
+Products & (Brands/Categories): Many-to-One.
+
+Orders & OrderDetails: Header-Detail pattern. IMPORTANT: OrderDetails must store the UnitPrice at the time of purchase to prevent historical data loss if product prices change.
+
+Cart, Wishlist, & Reviews: Junction tables linking Users and Products. Cart must include Quantity.
+
+Implementation Rules
+Model Definitions:
+
+Use Data Annotations (e.g., [Key], [Required], [StringLength]) for simple constraints.
+
+Use Fluent API in OnModelCreating for complex relationships (especially the 1:1 Product-ProductDetails and Delete behaviors).
+
+Navigation Properties: All navigation properties (Collections and Reference objects) must be marked as virtual to support Lazy Loading if needed.
+
+Naming Convention: Use PascalCase for C# properties and ensure they match the English names provided in the ERD.
+
+Architecture: * Keep Entities clean (POCO classes).
+
+Configurations should be moved to separate EntityTypeConfiguration classes if the OnModelCreating becomes too crowded.

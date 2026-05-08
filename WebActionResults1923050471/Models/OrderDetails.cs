@@ -2,20 +2,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebActionResults1923050471.Models
 {
-    public class Cart
+    public class OrderDetails
     {
         [Key]
-        public int CartID { get; set; }
+        public int OrderDetailID { get; set; }
 
-        public int UserID { get; set; }
+        public int OrderID { get; set; }
 
         public int ProductID { get; set; }
 
         public int Quantity { get; set; }
 
-        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+        public decimal UnitPrice { get; set; }
 
-        public virtual Users User { get; set; }
+        public virtual Orders Order { get; set; }
         public virtual Products Product { get; set; }
     }
 }

@@ -28,50 +28,50 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Supplier supplier)
+        public async Task<IActionResult> Create(Brands brand)
         {
             if (ModelState.IsValid)
             {
-                await _dataService.AddSupplierAsync(supplier);
+                await _dataService.AddBrandAsync(brand);
                 return RedirectToAction(nameof(Index));
             }
-            return View(supplier);
+            return View(brand);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var supplier = await _dataService.GetSupplierByIdAsync(id);
+            var supplier = await _dataService.GetBrandByIdAsync(id);
             if (supplier == null)
                 return NotFound();
             return View(supplier);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Supplier supplier)
+        public async Task<IActionResult> Edit(int id, Brands brand)
         {
-            if (id != supplier.Id)
+            if (id != brand.Id)
                 return BadRequest();
 
             if (ModelState.IsValid)
             {
-                await _dataService.UpdateSupplierAsync(supplier);
+                await _dataService.UpdateBrandAsync(brand);
                 return RedirectToAction(nameof(Index));
             }
-            return View(supplier);
+            return View(brand);
         }
 
         public async Task<IActionResult> Delete(int id)
         {
-            var supplier = await _dataService.GetSupplierByIdAsync(id);
-            if (supplier == null)
+            var brand = await _dataService.GetBrandByIdAsync(id);
+            if (brand == null)
                 return NotFound();
-            return View(supplier);
+            return View(brand);
         }
 
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _dataService.DeleteSupplierAsync(id);
+            await _dataService.DeleteBrandAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

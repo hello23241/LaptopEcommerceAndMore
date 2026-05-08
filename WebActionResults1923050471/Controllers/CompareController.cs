@@ -14,7 +14,7 @@ namespace WebActionResults1923050471.Controllers
         public async Task<IActionResult> Index()
         {
             var ids = await _compareService.GetComparedProductIdsAsync(HttpContext);
-            var products = new List<Product>();
+            var products = new List<Products>();
             foreach (var id in ids)
             {
                 var product = await _dataService.GetProductByIdAsync(id);
@@ -22,6 +22,15 @@ namespace WebActionResults1923050471.Controllers
                 {
                     products.Add(product);
                 }
+            }
+
+            if (products.Count == 0)
+            {
+                var allProducts = await _dataService.GetAllProductsAsync();
+                products = allProducts
+                    .Where(p => p.CategoryID == 1) // Laptop category
+                    .Take(2)
+                    .ToList();
             }
 
             var viewModel = new CompareViewModel(products);
@@ -62,5 +71,5 @@ namespace WebActionResults1923050471.Controllers
         }
     }
 
-    public record CompareViewModel(IReadOnlyList<Product> Products);
+    public record CompareViewModel(IReadOnlyList<Products> Products);
 }

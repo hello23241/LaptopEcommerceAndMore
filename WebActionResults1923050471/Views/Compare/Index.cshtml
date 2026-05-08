@@ -47,6 +47,62 @@
                         }
                     </tr>
                     <tr>
+                        <th>Type</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Type</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>CPU</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.CPU</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>RAM</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.RAM</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>GPU</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.GPU</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>HardDrive</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.HardDrive</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Screen</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.Screen</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Weight</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.Weight</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>Extra</th>
+                        @foreach (var product in Model.Products)
+                        {
+                            <td>@product.Specs?.Extra</td>
+                        }
+                    </tr>
+                    <tr>
                         <th>Quantity</th>
                         @foreach (var product in Model.Products)
                         {

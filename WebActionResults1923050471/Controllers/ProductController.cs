@@ -8,13 +8,22 @@ namespace WebActionResults1923050471.Controllers
     {
         private readonly IDataService _dataService = dataService;
 
-        private static IReadOnlyList<ProductDetailTab> GetDetailTabs() =>
-            new List<ProductDetailTab>
+        private static IReadOnlyList<ProductDetailTab> GetDetailTabs(Products product)
+        {
+            var tabs = new List<ProductDetailTab>
             {
-                new("Description", "Designed for everyday performance with a clean, modern build and smooth multitasking."),
-                new("Details", "Display: 15.6\" FHD | Memory: 16GB | Storage: 512GB SSD | Battery: Up to 10 hours"),
+                new("Description", product.ProductName),
                 new("Reviews", "Reviews are coming soon. Check back after launch.")
             };
+
+            if (product.ProductDetails != null)
+            {
+                var details = $"CPU: {product.ProductDetails.CPU}\nRAM: {product.ProductDetails.RAM}\nGPU: {product.ProductDetails.GPU}\nHardDrive: {product.ProductDetails.Storage}\nScreen: {product.ProductDetails.Display}\nWeight: {product.ProductDetails.Weight}\nExtra: {product.ProductDetails.OS}";
+                tabs.Insert(1, new ProductDetailTab("Details", details));
+            }
+
+            return tabs;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -27,7 +36,7 @@ namespace WebActionResults1923050471.Controllers
             var product = await _dataService.GetProductByIdAsync(id);
             if (product == null)
                 return NotFound();
-            var viewModel = new ProductDetailsViewModel(product, GetDetailTabs());
+            var viewModel = new ProductDetailsViewModel(product, GetDetailTabs(product));
             return View(viewModel);
         }
 
@@ -39,7 +48,7 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Create(Products product)
         {
             if (ModelState.IsValid)
             {
@@ -47,7 +56,7 @@ namespace WebActionResults1923050471.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
-            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
+            ViewBag.Suppliers = await _dataService.GetAllBrandsAsync();
             return View(product);
         }
 
@@ -57,12 +66,12 @@ namespace WebActionResults1923050471.Controllers
             if (product == null)
                 return NotFound();
             ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
-            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
+            ViewBag.Suppliers = await _dataService.GetAllBrandsAsync();
             return View(product);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Product product)
+        public async Task<IActionResult> Edit(int id, Products product)
         {
             if (id != product.Id)
                 return BadRequest();
@@ -73,7 +82,7 @@ namespace WebActionResults1923050471.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.Categories = await _dataService.GetAllCategoriesAsync();
-            ViewBag.Suppliers = await _dataService.GetAllSuppliersAsync();
+            ViewBag.Suppliers = await _dataService.GetAllBrandsAsync();
             return View(product);
         }
 

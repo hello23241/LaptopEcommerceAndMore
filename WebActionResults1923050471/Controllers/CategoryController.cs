@@ -28,7 +28,7 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Category category)
+        public async Task<IActionResult> Create(Categories category)
         {
             if (ModelState.IsValid)
             {
@@ -47,9 +47,9 @@ namespace WebActionResults1923050471.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Category category)
+        public async Task<IActionResult> Edit(int id, Categories category)
         {
-            if (id != category.Id)
+            if (id != category.CategoryID)
                 return BadRequest();
 
             if (ModelState.IsValid)

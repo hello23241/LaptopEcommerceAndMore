@@ -5,14 +5,14 @@ namespace WebActionResults1923050471.Services
 {
     public class InMemoryDataService : IDataService
     {
-        private static List<Product> products = new();
-        private static List<Category> categories = new();
-        private static List<Supplier> suppliers = new();
-        private static List<Account> accounts = new();
+        private static List<Products> products = new();
+        private static List<Categories> categories = new();
+        private static List<Brands> brands = new();
+        private static List<Users> users = new();
         private static int productId = 1;
         private static int categoryId = 1;
-        private static int supplierId = 1;
-        private static int accountId = 1;
+        private static int brandId = 1;
+        private static int userId = 1;
 
         public InMemoryDataService()
         {
@@ -23,40 +23,108 @@ namespace WebActionResults1923050471.Services
         {
             if (categories.Count == 0)
             {
-                categories.Add(new Category { Id = categoryId++, Name = "Electronics", Description = "Electronic devices" });
-                categories.Add(new Category { Id = categoryId++, Name = "Books", Description = "Books and publications" });
-                categories.Add(new Category { Id = categoryId++, Name = "Clothing", Description = "Clothing items" });
+                categories.Add(new Categories { CategoryID = categoryId++, CategoryName = "Laptops", Description = "Laptop devices" });
+                categories.Add(new Categories { CategoryID = categoryId++, CategoryName = "Accessories", Description = "Laptop accessories" });
 
-                suppliers.Add(new Supplier { Id = supplierId++, Name = "Supplier A", ContactInfo = "contact@suppliera.com", Address = "123 Street A" });
-                suppliers.Add(new Supplier { Id = supplierId++, Name = "Supplier B", ContactInfo = "contact@supplierb.com", Address = "456 Street B" });
-                suppliers.Add(new Supplier { Id = supplierId++, Name = "Supplier C", ContactInfo = "contact@supplierc.com", Address = "789 Street C" });
+                brands.Add(new Brands { BrandID = brandId++, BrandName = "TechCore", BrandLogo = "techcore.png" });
+                brands.Add(new Brands { BrandID = brandId++, BrandName = "NovaGear", BrandLogo = "novagear.png" });
 
-                products.Add(new Product { Id = productId++, Name = "Laptop Pro 15", Description = "High-performance laptop", Price = 1499, Quantity = 10, CategoryId = 1, SupplierId = 1 });
-                products.Add(new Product { Id = productId++, Name = "Ultrabook Air", Description = "Lightweight productivity laptop", Price = 1199, Quantity = 12, CategoryId = 1, SupplierId = 1 });
-                products.Add(new Product { Id = productId++, Name = "Gaming Beast", Description = "High-refresh gaming laptop", Price = 1899, Quantity = 7, CategoryId = 1, SupplierId = 1 });
-                products.Add(new Product { Id = productId++, Name = "Creator Studio", Description = "Content creation workstation", Price = 2099, Quantity = 5, CategoryId = 1, SupplierId = 2 });
-                products.Add(new Product { Id = productId++, Name = "Business Elite", Description = "Secure business laptop", Price = 1399, Quantity = 8, CategoryId = 1, SupplierId = 2 });
-                products.Add(new Product { Id = productId++, Name = "Student Starter", Description = "Affordable everyday laptop", Price = 699, Quantity = 18, CategoryId = 1, SupplierId = 3 });
-                products.Add(new Product { Id = productId++, Name = "Convertible Flex", Description = "2-in-1 touchscreen laptop", Price = 999, Quantity = 9, CategoryId = 1, SupplierId = 3 });
-                products.Add(new Product { Id = productId++, Name = "Travel Mate", Description = "Compact travel laptop", Price = 849, Quantity = 14, CategoryId = 1, SupplierId = 1 });
-                products.Add(new Product { Id = productId++, Name = "Office Essential", Description = "Reliable office laptop", Price = 899, Quantity = 16, CategoryId = 1, SupplierId = 2 });
-                products.Add(new Product { Id = productId++, Name = "Premium OLED", Description = "Vivid OLED display laptop", Price = 1599, Quantity = 6, CategoryId = 1, SupplierId = 3 });
-                products.Add(new Product { Id = productId++, Name = "Budget Boost", Description = "Entry-level performance", Price = 599, Quantity = 20, CategoryId = 1, SupplierId = 1 });
-                products.Add(new Product { Id = productId++, Name = "Performance Max", Description = "Balanced power and battery", Price = 1299, Quantity = 11, CategoryId = 1, SupplierId = 2 });
+                products.Add(new Products
+                {
+                    ProductID = productId++,
+                    ProductName = "Laptop Pro 15",
+                    BasePrice = 1499,
+                    StockQuantity = 10,
+                    CategoryID = 1,
+                    BrandID = 1,
+                    ProductImage = "laptop-pro-15.png",
+                    Status = "Active",
+                    ProductDetails = new ProductDetails
+                    {
+                        CPU = "Intel Core i7",
+                        RAM = "16GB DDR5",
+                        GPU = "Intel Iris Xe",
+                        Display = "15.6\" FHD",
+                        Storage = "512GB NVMe SSD",
+                        Battery = "10 hours",
+                        Weight = "1.7 kg",
+                        OS = "Windows 11"
+                    }
+                });
+                products.Add(new Products
+                {
+                    ProductID = productId++,
+                    ProductName = "Ultrabook Air",
+                    BasePrice = 1199,
+                    StockQuantity = 12,
+                    CategoryID = 1,
+                    BrandID = 2,
+                    ProductImage = "ultrabook-air.png",
+                    Status = "Active",
+                    ProductDetails = new ProductDetails
+                    {
+                        CPU = "Intel Core i5",
+                        RAM = "8GB DDR5",
+                        GPU = "Intel UHD",
+                        Display = "14\" FHD",
+                        Storage = "256GB NVMe SSD",
+                        Battery = "12 hours",
+                        Weight = "1.2 kg",
+                        OS = "Windows 11"
+                    }
+                });
+                products.Add(new Products
+                {
+                    ProductID = productId++,
+                    ProductName = "Wireless Mouse",
+                    BasePrice = 39,
+                    StockQuantity = 40,
+                    CategoryID = 2,
+                    BrandID = 1,
+                    ProductImage = "wireless-mouse.png",
+                    Status = "Active"
+                });
+                products.Add(new Products
+                {
+                    ProductID = productId++,
+                    ProductName = "USB-C Hub",
+                    BasePrice = 59,
+                    StockQuantity = 30,
+                    CategoryID = 2,
+                    BrandID = 2,
+                    ProductImage = "usb-c-hub.png",
+                    Status = "Active"
+                });
 
-                // Initialize sample accounts
-                accounts.Add(new Account { Id = accountId++, UserName = "admin", FullName = "Administrator", Password = "admin", Email = "admin@example.com", Phone = "0123456789", Status = 1 });
-                accounts.Add(new Account { Id = accountId++, UserName = "user1", FullName = "John Doe", Password = "user123", Email = "user1@example.com", Phone = "0987654321", Status = 1 });
-                accounts.Add(new Account { Id = accountId++, UserName = "user2", FullName = "Jane Smith", Password = "user456", Email = "user2@example.com", Phone = "0918273645", Status = 1 });
+                users.Add(new Users
+                {
+                    UserID = userId++,
+                    Username = "admin",
+                    PasswordHash = "admin",
+                    FullName = "Administrator",
+                    Email = "admin@example.com",
+                    PhoneNumber = "0123456789",
+                    Role = "Admin"
+                });
+                users.Add(new Users
+                {
+                    UserID = userId++,
+                    Username = "user1",
+                    PasswordHash = "user123",
+                    FullName = "John Doe",
+                    Email = "user1@example.com",
+                    PhoneNumber = "0987654321",
+                    Role = "Customer"
+                });
             }
         }
 
         // Products
-        public Task<List<Product>> GetAllProductsAsync() => Task.FromResult(products);
-        public Task<List<Product>> GetProductsPageAsync(int pageNumber, int pageSize)
+        public Task<List<Products>> GetAllProductsAsync() => Task.FromResult(products);
+        public Task<List<Products>> GetProductsPageAsync(int pageNumber, int pageSize)
         {
             var items = products
-                .OrderBy(p => p.Id)
+                .OrderBy(p => p.ProductID)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -64,141 +132,143 @@ namespace WebActionResults1923050471.Services
         }
 
         public Task<int> GetProductCountAsync() => Task.FromResult(products.Count);
-        public Task<Product> GetProductByIdAsync(int id) => Task.FromResult(products.FirstOrDefault(p => p.Id == id));
+        public Task<Products> GetProductByIdAsync(int id) => Task.FromResult(products.FirstOrDefault(p => p.ProductID == id));
 
-        public Task AddProductAsync(Product product)
+        public Task AddProductAsync(Products product)
         {
-            product.Id = productId++;
+            product.ProductID = productId++;
             products.Add(product);
             return Task.CompletedTask;
         }
 
-        public Task UpdateProductAsync(Product product)
+        public Task UpdateProductAsync(Products product)
         {
-            var existing = products.FirstOrDefault(p => p.Id == product.Id);
+            var existing = products.FirstOrDefault(p => p.ProductID == product.ProductID);
             if (existing != null)
             {
-                existing.Name = product.Name;
-                existing.Description = product.Description;
-                existing.Price = product.Price;
-                existing.Quantity = product.Quantity;
-                existing.CategoryId = product.CategoryId;
-                existing.SupplierId = product.SupplierId;
+                existing.ProductName = product.ProductName;
+                existing.BasePrice = product.BasePrice;
+                existing.StockQuantity = product.StockQuantity;
+                existing.CategoryID = product.CategoryID;
+                existing.BrandID = product.BrandID;
+                existing.ProductImage = product.ProductImage;
+                existing.Status = product.Status;
             }
             return Task.CompletedTask;
         }
 
         public Task DeleteProductAsync(int id)
         {
-            var product = products.FirstOrDefault(p => p.Id == id);
+            var product = products.FirstOrDefault(p => p.ProductID == id);
             if (product != null)
                 products.Remove(product);
             return Task.CompletedTask;
         }
 
         // Categories
-        public Task<List<Category>> GetAllCategoriesAsync() => Task.FromResult(categories);
-        public Task<Category> GetCategoryByIdAsync(int id) => Task.FromResult(categories.FirstOrDefault(c => c.Id == id));
+        public Task<List<Categories>> GetAllCategoriesAsync() => Task.FromResult(categories);
+        public Task<Categories> GetCategoryByIdAsync(int id) => Task.FromResult(categories.FirstOrDefault(c => c.CategoryID == id));
 
-        public Task AddCategoryAsync(Category category)
+        public Task AddCategoryAsync(Categories category)
         {
-            category.Id = categoryId++;
+            category.CategoryID = categoryId++;
             categories.Add(category);
             return Task.CompletedTask;
         }
 
-        public Task UpdateCategoryAsync(Category category)
+        public Task UpdateCategoryAsync(Categories category)
         {
-            var existing = categories.FirstOrDefault(c => c.Id == category.Id);
+            var existing = categories.FirstOrDefault(c => c.CategoryID == category.CategoryID);
             if (existing != null)
             {
-                existing.Name = category.Name;
+                existing.CategoryName = category.CategoryName;
                 existing.Description = category.Description;
+                existing.Icon = category.Icon;
+                existing.Slug = category.Slug;
+                existing.ParentID = category.ParentID;
             }
             return Task.CompletedTask;
         }
 
         public Task DeleteCategoryAsync(int id)
         {
-            var category = categories.FirstOrDefault(c => c.Id == id);
+            var category = categories.FirstOrDefault(c => c.CategoryID == id);
             if (category != null)
                 categories.Remove(category);
             return Task.CompletedTask;
         }
 
         // Suppliers
-        public Task<List<Supplier>> GetAllSuppliersAsync() => Task.FromResult(suppliers);
-        public Task<Supplier> GetSupplierByIdAsync(int id) => Task.FromResult(suppliers.FirstOrDefault(s => s.Id == id));
+        public Task<List<Brands>> GetAllBrandsAsync() => Task.FromResult(brands);
+        public Task<Brands> GetBrandByIdAsync(int id) => Task.FromResult(brands.FirstOrDefault(b => b.BrandID == id));
 
-        public Task AddSupplierAsync(Supplier supplier)
+        public Task AddBrandAsync(Brands brand)
         {
-            supplier.Id = supplierId++;
-            suppliers.Add(supplier);
+            brand.BrandID = brandId++;
+            brands.Add(brand);
             return Task.CompletedTask;
         }
 
-        public Task UpdateSupplierAsync(Supplier supplier)
+        public Task UpdateBrandAsync(Brands brand)
         {
-            var existing = suppliers.FirstOrDefault(s => s.Id == supplier.Id);
+            var existing = brands.FirstOrDefault(b => b.BrandID == brand.BrandID);
             if (existing != null)
             {
-                existing.Name = supplier.Name;
-                existing.ContactInfo = supplier.ContactInfo;
-                existing.Address = supplier.Address;
+                existing.BrandName = brand.BrandName;
+                existing.BrandLogo = brand.BrandLogo;
             }
             return Task.CompletedTask;
         }
 
-        public Task DeleteSupplierAsync(int id)
+        public Task DeleteBrandAsync(int id)
         {
-            var supplier = suppliers.FirstOrDefault(s => s.Id == id);
-            if (supplier != null)
-                suppliers.Remove(supplier);
+            var brand = brands.FirstOrDefault(b => b.BrandID == id);
+            if (brand != null)
+                brands.Remove(brand);
             return Task.CompletedTask;
         }
 
-        // Accounts
-        public Task<List<Account>> GetAllAccountsAsync() => Task.FromResult(accounts);
-        public Task<Account> GetAccountByIdAsync(int id) => Task.FromResult(accounts.FirstOrDefault(a => a.Id == id));
-        public Task<Account> GetAccountByUserNameAsync(string userName) => Task.FromResult(accounts.FirstOrDefault(a => a.UserName == userName));
+        // Users
+        public Task<List<Users>> GetAllUsersAsync() => Task.FromResult(users);
+        public Task<Users> GetUserByIdAsync(int id) => Task.FromResult(users.FirstOrDefault(a => a.UserID == id));
+        public Task<Users> GetUserByUserNameAsync(string userName) => Task.FromResult(users.FirstOrDefault(a => a.Username == userName));
 
-        public Task AddAccountAsync(Account account)
+        public Task AddUserAsync(Users user)
         {
-            account.Id = accountId++;
-            account.CreatedDate = DateTime.Now;
-            accounts.Add(account);
+            user.UserID = userId++;
+            user.CreatedAt = DateTime.UtcNow;
+            users.Add(user);
             return Task.CompletedTask;
         }
 
-        public Task UpdateAccountAsync(Account account)
+        public Task UpdateUserAsync(Users user)
         {
-            var existing = accounts.FirstOrDefault(a => a.Id == account.Id);
+            var existing = users.FirstOrDefault(a => a.UserID == user.UserID);
             if (existing != null)
             {
-                existing.UserName = account.UserName;
-                existing.FullName = account.FullName;
-                existing.Password = account.Password;
-                existing.Email = account.Email;
-                existing.Phone = account.Phone;
-                existing.Birthday = account.Birthday;
-                existing.Status = account.Status;
-                existing.Notes = account.Notes;
+                existing.Username = user.Username;
+                existing.FullName = user.FullName;
+                existing.PasswordHash = user.PasswordHash;
+                existing.Email = user.Email;
+                existing.PhoneNumber = user.PhoneNumber;
+                existing.Address = user.Address;
+                existing.Role = user.Role;
             }
             return Task.CompletedTask;
         }
 
-        public Task DeleteAccountAsync(int id)
+        public Task DeleteUserAsync(int id)
         {
-            var account = accounts.FirstOrDefault(a => a.Id == id);
-            if (account != null)
-                accounts.Remove(account);
+            var user = users.FirstOrDefault(a => a.UserID == id);
+            if (user != null)
+                users.Remove(user);
             return Task.CompletedTask;
         }
 
         public Task<bool> ValidateLoginAsync(string userName, string password)
         {
-            var account = accounts.FirstOrDefault(a => a.UserName == userName && a.Password == password && a.Status == 1);
-            return Task.FromResult(account != null);
+            var user = users.FirstOrDefault(a => a.Username == userName && a.PasswordHash == password);
+            return Task.FromResult(user != null);
         }
     }
 }

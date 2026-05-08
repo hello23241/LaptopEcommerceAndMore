@@ -2,16 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebActionResults1923050471.Models
 {
-    public class Cart
+    public class Wishlist
     {
         [Key]
-        public int CartID { get; set; }
+        public int WishlistID { get; set; }
 
         public int UserID { get; set; }
 
         public int ProductID { get; set; }
-
-        public int Quantity { get; set; }
 
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
