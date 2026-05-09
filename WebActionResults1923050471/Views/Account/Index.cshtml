@@ -1,4 +1,4 @@
-@model List<WebActionResults1923050471.Models.Account>
+@model List<WebActionResults1923050471.Models.Users>
 
 @{
     ViewData["Title"] = "Accounts";
@@ -28,25 +28,25 @@
                 @foreach (var account in Model)
                 {
                     <tr>
-                        <td>@account.Id</td>
-                        <td>@account.UserName</td>
+                        <td>@account.UserId</td>
+                        <td>@account.Username</td>
                         <td>@account.FullName</td>
                         <td>@account.Email</td>
-                        <td>@account.Phone</td>
+                        <td>@account.PhoneNumber</td>
                         <td>
-                            @if (account.Status == 1)
+                            @if (account.Role == "Customer")
                             {
-                                <span class="badge bg-success">Active</span>
+                                <span class="badge bg-success">Customer</span>
                             }
                             else
                             {
-                                <span class="badge bg-danger">Inactive</span>
+                                <span class="badge bg-danger">Admin</span>
                             }
                         </td>
                         <td>
-                            <a href="@Url.Action("Details", new { id = account.Id })" class="btn btn-sm btn-info">View</a>
-                            <a href="@Url.Action("Edit", new { id = account.Id })" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="@Url.Action("Delete", new { id = account.Id })" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="@Url.Action("Details", new { id = account.UserId })" class="btn btn-sm btn-info">View</a>
+                            <a href="@Url.Action("Edit", new { id = account.UserId })" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="@Url.Action("Delete", new { id = account.UserId })" class="btn btn-sm btn-danger">Delete</a>
                         </td>
                     </tr>
                 }

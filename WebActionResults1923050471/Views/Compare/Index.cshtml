@@ -1,4 +1,4 @@
-@model WebActionResults1923050471.Controllers.CompareViewModel
+@model WebActionResults1923050471.ViewModels.CompareViewModel
 
 @{
     ViewData["Title"] = "Compare Products";
@@ -27,7 +27,7 @@
                         <th>Feature</th>
                         @foreach (var product in Model.Products)
                         {
-                            <th>@product.Name</th>
+                            <th>@product.ProductName</th>
                         }
                     </tr>
                 </thead>
@@ -36,7 +36,7 @@
                         <th>Price</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>$@product.Price.ToString("F2")</td>
+                            <td>$@product.BasePrice.ToString("F2")</td>
                         }
                     </tr>
                     <tr>
@@ -47,80 +47,66 @@
                         }
                     </tr>
                     <tr>
-                        <th>Type</th>
-                        @foreach (var product in Model.Products)
-                        {
-                            <td>@product.Type</td>
-                        }
-                    </tr>
-                    <tr>
                         <th>CPU</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.CPU</td>
+                            <td>@product.ProductDetails?.CPU</td>
                         }
                     </tr>
                     <tr>
                         <th>RAM</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.RAM</td>
+                            <td>@product.ProductDetails?.RAM</td>
                         }
                     </tr>
                     <tr>
                         <th>GPU</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.GPU</td>
+                            <td>@product.ProductDetails?.GPU</td>
                         }
                     </tr>
                     <tr>
                         <th>HardDrive</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.HardDrive</td>
+                            <td>@product.ProductDetails?.Storage</td>
                         }
                     </tr>
                     <tr>
                         <th>Screen</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.Screen</td>
+                            <td>@product.ProductDetails?.Display</td>
                         }
                     </tr>
                     <tr>
                         <th>Weight</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.Weight</td>
+                            <td>@product.ProductDetails?.Weight</td>
                         }
                     </tr>
                     <tr>
                         <th>Extra</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.Specs?.Extra</td>
-                        }
-                    </tr>
-                    <tr>
-                        <th>Quantity</th>
-                        @foreach (var product in Model.Products)
-                        {
-                            <td>@product.Quantity</td>
+                            <td>@product.ProductDetails?.Extra</td>
                         }
                     </tr>
                     <tr>
                         <th>Category</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.CategoryId</td>
+                            <td>@product.CategoryID</td>
                         }
                     </tr>
                     <tr>
                         <th>Supplier</th>
                         @foreach (var product in Model.Products)
                         {
-                            <td>@product.SupplierId</td>
+                            <td>@product.BrandID</td>
                         }
                     </tr>
                 </tbody>

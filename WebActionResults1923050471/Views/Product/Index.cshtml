@@ -1,4 +1,4 @@
-@model List<WebActionResults1923050471.Models.Product>
+@model List<WebActionResults1923050471.Models.Products>
 
 @{
     ViewData["Title"] = "Products";
@@ -33,20 +33,19 @@
                 @foreach (var product in Model)
                 {
                     <tr>
-                        <td>@product.Id</td>
-                        <td>@product.Name</td>
-                        <td>$@product.Price.ToString("F2")</td>
-                        <td>@product.Quantity</td>
-                        <td>@product.CategoryId</td>
+                        <td>@product.ProductID</td>
+                        <td>@product.ProductName</td>
+                        <td>$@product.BasePrice.ToString("F2")</td>
+                        <td>@product.CategoryID</td>
                         <td>
-                            <a href="@Url.Action("Details", new { id = product.Id })" class="btn btn-sm btn-info">View</a>
-                            <a href="@Url.Action("Edit", new { id = product.Id })" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="@Url.Action("Delete", new { id = product.Id })" class="btn btn-sm btn-danger">Delete</a>
-                            @await Component.InvokeAsync("CompareButton", new { productId = product.Id })
+                            <a href="@Url.Action("Details", new { id = product.ProductID })" class="btn btn-sm btn-info">View</a>
+                            <a href="@Url.Action("Edit", new { id = product.ProductID })" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="@Url.Action("Delete", new { id = product.ProductID })" class="btn btn-sm btn-danger">Delete</a>
+                            @await Component.InvokeAsync("CompareButton", new { productId = product.ProductID })
                             @if (userId.HasValue)
                             {
                                 <form asp-controller="Cart" asp-action="AddToCart" method="post" style="display: inline;">
-                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <input type="hidden" name="productId" value="@product.ProductID" />
                                     <input type="hidden" name="quantity" value="1" />
                                     <button type="submit" class="btn btn-sm btn-success">Add to Cart</button>
                                 </form>

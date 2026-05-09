@@ -5,7 +5,7 @@ namespace WebActionResults1923050471.Models
     public class Categories
     {
         [Key]
-        public int CategoryID { get; set; }
+        public int CategoryId { get; set; }
 
         [Required]
         public string CategoryName { get; set; }

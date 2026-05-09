@@ -1,4 +1,4 @@
-@model List<WebActionResults1923050471.Models.Category>
+@model List<WebActionResults1923050471.Models.Categories>
 
 @{
     ViewData["Title"] = "Categories";
@@ -30,13 +30,13 @@
                 @foreach (var category in Model)
                 {
                     <tr>
-                        <td>@category.Id</td>
-                        <td>@category.Name</td>
+                        <td>@category.CategoryId</td>
+                        <td>@category.CategoryName</td>
                         <td>@category.Description</td>
                         <td>
-                            <a href="@Url.Action("Details", new { id = category.Id })" class="btn btn-sm btn-info">View</a>
-                            <a href="@Url.Action("Edit", new { id = category.Id })" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="@Url.Action("Delete", new { id = category.Id })" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="@Url.Action("Details", new { id = category.CategoryId })" class="btn btn-sm btn-info">View</a>
+                            <a href="@Url.Action("Edit", new { id = category.CategoryId })" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="@Url.Action("Delete", new { id = category.CategoryId })" class="btn btn-sm btn-danger">Delete</a>
                         </td>
                     </tr>
                 }

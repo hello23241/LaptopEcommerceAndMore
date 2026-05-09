@@ -5,7 +5,7 @@ namespace WebActionResults1923050471.Models
     public class Users
     {
         [Key]
-        public int UserID { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         [StringLength(10, MinimumLength = 5)]

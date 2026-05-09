@@ -6,7 +6,6 @@ namespace WebActionResults1923050471.Models
     {
         [Key]
         public int ProductID { get; set; }
-
         public string CPU { get; set; }
 
         public string RAM { get; set; }
@@ -22,7 +21,7 @@ namespace WebActionResults1923050471.Models
         public string Weight { get; set; }
 
         public string OS { get; set; }
-
+        public string Extra { get; set; }
         public virtual Products Product { get; set; }
     }
 }

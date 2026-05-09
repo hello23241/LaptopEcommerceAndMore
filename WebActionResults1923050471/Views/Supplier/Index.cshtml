@@ -1,4 +1,4 @@
-@model List<WebActionResults1923050471.Models.Supplier>
+@model List<WebActionResults1923050471.Models.Brands>
 
 @{
     ViewData["Title"] = "Suppliers";
@@ -31,14 +31,14 @@
                 @foreach (var supplier in Model)
                 {
                     <tr>
-                        <td>@supplier.Id</td>
-                        <td>@supplier.Name</td>
+                        <td>@supplier.BrandId</td>
+                        <td>@supplier.BrandName</td>
                         <td>@supplier.ContactInfo</td>
                         <td>@supplier.Address</td>
                         <td>
-                            <a href="@Url.Action("Details", new { id = supplier.Id })" class="btn btn-sm btn-info">View</a>
-                            <a href="@Url.Action("Edit", new { id = supplier.Id })" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="@Url.Action("Delete", new { id = supplier.Id })" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="@Url.Action("Details", new { id = supplier.BrandId })" class="btn btn-sm btn-info">View</a>
+                            <a href="@Url.Action("Edit", new { id = supplier.BrandId })" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="@Url.Action("Delete", new { id = supplier.BrandId })" class="btn btn-sm btn-danger">Delete</a>
                         </td>
                     </tr>
                 }

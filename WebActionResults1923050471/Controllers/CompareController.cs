@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebActionResults1923050471.Interfaces;
 using WebActionResults1923050471.Models;
 using WebActionResults1923050471.ViewComponents;
+using WebActionResults1923050471.ViewModels;
 
 namespace WebActionResults1923050471.Controllers
 {
@@ -70,6 +71,4 @@ namespace WebActionResults1923050471.Controllers
             return RedirectToAction("Index");
         }
     }
-
-    public record CompareViewModel(IReadOnlyList<Products> Products);
 }

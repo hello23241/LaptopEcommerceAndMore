@@ -1,4 +1,4 @@
-@model WebActionResults1923050471.Models.Account
+@model WebActionResults1923050471.Models.Users
 
 @{
     ViewData["Title"] = "Account Details";
@@ -10,28 +10,24 @@
 
     <div class="card mt-3">
         <div class="card-body">
-            <p><strong>ID:</strong> @Model.Id</p>
-            <p><strong>Username:</strong> @Model.UserName</p>
+            <p><strong>ID:</strong> @Model.UserId</p>
+            <p><strong>Username:</strong> @Model.Username</p>
             <p><strong>Full Name:</strong> @Model.FullName</p>
             <p><strong>Email:</strong> @Model.Email</p>
-            <p><strong>Phone:</strong> @Model.Phone</p>
-            @if (Model.Birthday.HasValue)
-            {
-                <p><strong>Birthday:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</p>
-            }
+            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
             <p><strong>Status:</strong>
-                @if (Model.Status == 1)
+                @if (Model.Role == "Customer")
                 {
-                    <span class="badge bg-success">Active</span>
+                    <span class="badge bg-success">Customer</span>
                 }
                 else
                 {
-                    <span class="badge bg-danger">Inactive</span>
+                    <span class="badge bg-danger">Admin</span>
                 }
             </p>
         </div>
     </div>
 
-    <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning mt-3">Edit</a>
+    <a href="@Url.Action("Edit", new { id = Model.UserId })" class="btn btn-warning mt-3">Edit</a>
     <a href="@Url.Action("Index")" class="btn btn-secondary mt-3">Back to List</a>
 </div>

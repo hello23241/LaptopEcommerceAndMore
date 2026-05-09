@@ -9,7 +9,7 @@ namespace WebActionResults1923050471.Models
 
         [Required]
         public string ProductName { get; set; }
-
+        public string Description { get; set; } = string.Empty;
         public int BrandID { get; set; }
 
         public int CategoryID { get; set; }

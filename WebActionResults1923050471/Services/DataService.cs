@@ -23,12 +23,11 @@ namespace WebActionResults1923050471.Services
         {
             if (categories.Count == 0)
             {
-                categories.Add(new Categories { CategoryID = categoryId++, CategoryName = "Laptops", Description = "Laptop devices" });
-                categories.Add(new Categories { CategoryID = categoryId++, CategoryName = "Accessories", Description = "Laptop accessories" });
+                categories.Add(new Categories { CategoryId = categoryId++, CategoryName = "Laptops", Description = "Laptop devices" });
+                categories.Add(new Categories { CategoryId = categoryId++, CategoryName = "Accessories", Description = "Laptop accessories" });
 
-                brands.Add(new Brands { BrandID = brandId++, BrandName = "TechCore", BrandLogo = "techcore.png" });
-                brands.Add(new Brands { BrandID = brandId++, BrandName = "NovaGear", BrandLogo = "novagear.png" });
-
+                brands.Add(new Brands { BrandId = brandId++, BrandName = "TechCore", BrandLogo = "techcore.png" });
+                brands.Add(new Brands { BrandId = brandId++, BrandName = "NovaGear", BrandLogo = "novagear.png" });
                 products.Add(new Products
                 {
                     ProductID = productId++,
@@ -98,7 +97,7 @@ namespace WebActionResults1923050471.Services
 
                 users.Add(new Users
                 {
-                    UserID = userId++,
+                    UserId = userId++,
                     Username = "admin",
                     PasswordHash = "admin",
                     FullName = "Administrator",
@@ -108,7 +107,7 @@ namespace WebActionResults1923050471.Services
                 });
                 users.Add(new Users
                 {
-                    UserID = userId++,
+                    UserId = userId++,
                     Username = "user1",
                     PasswordHash = "user123",
                     FullName = "John Doe",
@@ -167,18 +166,18 @@ namespace WebActionResults1923050471.Services
 
         // Categories
         public Task<List<Categories>> GetAllCategoriesAsync() => Task.FromResult(categories);
-        public Task<Categories> GetCategoryByIdAsync(int id) => Task.FromResult(categories.FirstOrDefault(c => c.CategoryID == id));
+        public Task<Categories> GetCategoryByIdAsync(int id) => Task.FromResult(categories.FirstOrDefault(c => c.CategoryId == id));
 
         public Task AddCategoryAsync(Categories category)
         {
-            category.CategoryID = categoryId++;
+            category.CategoryId = categoryId++;
             categories.Add(category);
             return Task.CompletedTask;
         }
 
         public Task UpdateCategoryAsync(Categories category)
         {
-            var existing = categories.FirstOrDefault(c => c.CategoryID == category.CategoryID);
+            var existing = categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
             if (existing != null)
             {
                 existing.CategoryName = category.CategoryName;
@@ -192,7 +191,7 @@ namespace WebActionResults1923050471.Services
 
         public Task DeleteCategoryAsync(int id)
         {
-            var category = categories.FirstOrDefault(c => c.CategoryID == id);
+            var category = categories.FirstOrDefault(c => c.CategoryId == id);
             if (category != null)
                 categories.Remove(category);
             return Task.CompletedTask;
@@ -200,18 +199,18 @@ namespace WebActionResults1923050471.Services
 
         // Suppliers
         public Task<List<Brands>> GetAllBrandsAsync() => Task.FromResult(brands);
-        public Task<Brands> GetBrandByIdAsync(int id) => Task.FromResult(brands.FirstOrDefault(b => b.BrandID == id));
+        public Task<Brands> GetBrandByIdAsync(int id) => Task.FromResult(brands.FirstOrDefault(b => b.BrandId == id));
 
         public Task AddBrandAsync(Brands brand)
         {
-            brand.BrandID = brandId++;
+            brand.BrandId = brandId++;
             brands.Add(brand);
             return Task.CompletedTask;
         }
 
         public Task UpdateBrandAsync(Brands brand)
         {
-            var existing = brands.FirstOrDefault(b => b.BrandID == brand.BrandID);
+            var existing = brands.FirstOrDefault(b => b.BrandId == brand.BrandId);
             if (existing != null)
             {
                 existing.BrandName = brand.BrandName;
@@ -222,7 +221,7 @@ namespace WebActionResults1923050471.Services
 
         public Task DeleteBrandAsync(int id)
         {
-            var brand = brands.FirstOrDefault(b => b.BrandID == id);
+            var brand = brands.FirstOrDefault(b => b.BrandId == id);
             if (brand != null)
                 brands.Remove(brand);
             return Task.CompletedTask;
@@ -230,12 +229,12 @@ namespace WebActionResults1923050471.Services
 
         // Users
         public Task<List<Users>> GetAllUsersAsync() => Task.FromResult(users);
-        public Task<Users> GetUserByIdAsync(int id) => Task.FromResult(users.FirstOrDefault(a => a.UserID == id));
+        public Task<Users> GetUserByIdAsync(int id) => Task.FromResult(users.FirstOrDefault(a => a.UserId == id));
         public Task<Users> GetUserByUserNameAsync(string userName) => Task.FromResult(users.FirstOrDefault(a => a.Username == userName));
 
         public Task AddUserAsync(Users user)
         {
-            user.UserID = userId++;
+            user.UserId = userId++;
             user.CreatedAt = DateTime.UtcNow;
             users.Add(user);
             return Task.CompletedTask;
@@ -243,7 +242,7 @@ namespace WebActionResults1923050471.Services
 
         public Task UpdateUserAsync(Users user)
         {
-            var existing = users.FirstOrDefault(a => a.UserID == user.UserID);
+            var existing = users.FirstOrDefault(a => a.UserId == user.UserId);
             if (existing != null)
             {
                 existing.Username = user.Username;
@@ -259,7 +258,7 @@ namespace WebActionResults1923050471.Services
 
         public Task DeleteUserAsync(int id)
         {
-            var user = users.FirstOrDefault(a => a.UserID == id);
+            var user = users.FirstOrDefault(a => a.UserId == id);
             if (user != null)
                 users.Remove(user);
             return Task.CompletedTask;

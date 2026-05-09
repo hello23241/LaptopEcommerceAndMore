@@ -45,10 +45,11 @@ namespace WebActionResults1923050471.Controllers
                 var userId = GetUserId();
                 var cartItem = new CartItem
                 {
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    Price = product.Price,
-                    Quantity = quantity
+                    ProductId = product.ProductID,
+                    ProductName = product.ProductName,
+                    Price = product.BasePrice,
+                    Quantity = quantity,
+                    Subtotal = product.BasePrice * quantity
                 };
 
                 await _cartService.AddToCartAsync(HttpContext, userId, cartItem);

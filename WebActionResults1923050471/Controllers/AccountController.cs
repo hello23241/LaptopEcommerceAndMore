@@ -39,7 +39,7 @@ namespace WebActionResults1923050471.Controllers
                     ViewData["ReturnUrl"] = returnUrl;
                     return View();
                 }
-                HttpContext.Session.SetInt32("UserId", account.UserID);
+                HttpContext.Session.SetInt32("UserId", account.UserId);
                 HttpContext.Session.SetString("UserName", account.Username);
                 HttpContext.Session.SetString("FullName", account.FullName);
                 if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -124,7 +124,7 @@ namespace WebActionResults1923050471.Controllers
             if (userId == null || userId != id)
                 return RedirectToAction("Login");
 
-            if (id != account.UserID)
+            if (id != account.UserId)
                 return BadRequest();
 
             if (ModelState.IsValid)

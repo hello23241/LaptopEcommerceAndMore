@@ -49,7 +49,7 @@ namespace WebActionResults1923050471.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Brands brand)
         {
-            if (id != brand.BrandID)
+            if (id != brand.BrandId)
                 return BadRequest();
 
             if (ModelState.IsValid)
