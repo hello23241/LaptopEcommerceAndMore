@@ -1,0 +1,106 @@
+@page
+@model LaptopEcommerceAndMore.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+    ViewData["ShowSidebar"] = false;
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-center">
+                    <h3 class="mb-0 text-white">Create a new account</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="registerForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Username" class="form-label font-weight-bold">Username</label>
+                            <input asp-for="Input.Username" class="form-control" />
+                            <span asp-validation-for="Input.Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Password" class="form-label font-weight-bold">Password</label>
+                            <input asp-for="Input.Password" type="password" id="passwordInput" class="form-control" />
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            
+                            <div id="password-requirements" class="mt-2 small p-2 bg-light rounded">
+                                <div id="req-length" class="text-danger">✘ At least 8 characters</div>
+                                <div id="req-uppercase" class="text-danger">✘ 1 capital letter (A-Z)</div>
+                                <div id="req-number" class="text-danger">✘ 1 digit (0-9)</div>
+                                <div id="req-special" class="text-danger">✘ 1 special character (!@@#$%...)</div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.FullName" class="form-label">Full name</label>
+                            <input asp-for="Input.FullName" class="form-control" />
+                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <input asp-for="Input.Email" class="form-control" />
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="mb-3">
+                                <label asp-for="Input.Phone" class="form-label">Phone number</label>
+                                <input asp-for="Input.Phone" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Input.Address" class="form-label">Address</label>
+                            <input asp-for="Input.Address" class="form-control" />
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mt-3 py-2 font-weight-bold">REGISTER</button>
+                    </form>
+
+                    <p class="text-center mt-4">Already have an account? <a asp-page="/Account/Login" class="text-success font-weight-bold">Log in here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const passwordInput = document.getElementById('passwordInput');
+        const requirements = {
+            length: document.getElementById('req-length'),
+            upper: document.getElementById('req-uppercase'),
+            number: document.getElementById('req-number'),
+            special: document.getElementById('req-special')
+        };
+
+        passwordInput.addEventListener('input', function () {
+            const val = this.value;
+
+            // Kiểm tra các điều kiện
+            updateStatus(requirements.length, val.length >= 8, "At least 8 characters");
+            updateStatus(requirements.upper, /[A-Z]/.test(val), "1 capital letter (A-Z)");
+            updateStatus(requirements.number, /[0-9]/.test(val), "1 digit (0-9)");
+            updateStatus(requirements.special, /[!@@#$%^&*(),.?":{}|<>]/.test(val), "1 special character (!@@#$%...)");
+        });
+
+        function updateStatus(element, isValid, text) {
+            if (isValid) {
+                element.classList.replace('text-danger', 'text-success');
+                element.innerHTML = '✔ ' + text;
+            } else {
+                element.classList.replace('text-success', 'text-danger');
+                element.innerHTML = '✘ ' + text;
+            }
+        }
+    </script>
+}

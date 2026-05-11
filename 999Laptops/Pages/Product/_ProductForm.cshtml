@@ -1,0 +1,50 @@
+@model LaptopEcommerceAndMore.Models.Products
+
+<div class="form-group mb-3">
+    <label asp-for="ProductName" class="form-label"></label>
+    <input asp-for="ProductName" class="form-control" />
+    <span asp-validation-for="ProductName" class="text-danger"></span>
+</div>
+
+<div class="form-group mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+<div class="form-group mb-3">
+    <label asp-for="BasePrice" class="form-label"></label>
+    <input asp-for="BasePrice" type="number" step="0.01" class="form-control" />
+    <span asp-validation-for="BasePrice" class="text-danger"></span>
+</div>
+
+<div class="form-group mb-3">
+    <label asp-for="CategoryID" class="form-label">Category</label>
+    <select asp-for="CategoryID" class="form-control">
+        <option value="">Select a category</option>
+        @if (ViewBag.Categories != null)
+        {
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        }
+    </select>
+    <span asp-validation-for="CategoryID" class="text-danger"></span>
+</div>
+
+<div class="form-group mb-3">
+    <label asp-for="BrandID" class="form-label">Supplier</label>
+    <select asp-for="BrandID" class="form-control">
+        <option value="">Select a supplier</option>
+        @if (ViewBag.Suppliers != null)
+        {
+            @foreach (var supplier in ViewBag.Suppliers)
+            {
+                <option value="@supplier.Id">@supplier.Name</option>
+            }
+        }
+    </select>
+    <span asp-validation-for="BrandID" class="text-danger"></span>
+</div>
+

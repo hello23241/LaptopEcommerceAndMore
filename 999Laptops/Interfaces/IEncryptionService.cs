@@ -1,0 +1,9 @@
+namespace LaptopEcommerceAndMore.Interfaces
+{
+    public interface IEncryptionService
+    {
+        string Encrypt(string plaintext);
+        string Decrypt(string cipherText);
+    }
+}
+

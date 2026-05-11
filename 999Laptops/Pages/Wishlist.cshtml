@@ -1,0 +1,28 @@
+@page
+@model LaptopEcommerceAndMore.Pages.WishlistModel
+
+<div class="row">
+    @if (Model.WishlistItems != null && Model.WishlistItems.Any())
+    {
+        @foreach (var item in Model.WishlistItems)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5>@item.ProductName</h5>
+                        <p>@item.BasePrice.ToString("C")</p>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center py-5">
+            <i class="fa fa-heart-o mb-3" style="font-size: 50px; color: #D10024;"></i>
+            <h3>Empty wishlist</h3>
+            <p>Go back to the shop and pick out your favorite products!</p>
+            <a href="/" class="btn btn-danger">Return to store</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,10 @@
+@model LaptopEcommerceAndMore.ViewComponents.CompareButtonViewModel
+
+<form class="compare-button" data-product-id="@Model.ProductId" method="post" action="@Url.Action("Toggle", "Compare")" style="display: inline;">
+    <input type="hidden" name="productId" value="@Model.ProductId" />
+    <button type="submit" class="btn btn-sm btn-outline-danger" data-state="@(Model.IsCompared ? "remove" : "add")">
+        @(Model.IsCompared ? "Remove from Compare" : "Add to Compare")
+    </button>
+    <span class="text-muted ms-2" style="font-size: 0.85rem;">@Model.Count/4</span>
+</form>
+

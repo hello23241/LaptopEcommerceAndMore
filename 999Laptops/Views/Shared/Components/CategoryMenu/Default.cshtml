@@ -1,0 +1,21 @@
+@model List<LaptopEcommerceAndMore.Models.Categories>
+
+<div class="category-menu mb-3">
+    <div class="list-group">
+        <h5 class="list-group-header bg-info text-white p-2">Product Categories</h5>
+        @if (Model.Any())
+        {
+            @foreach (var category in Model)
+            {
+                <a href="@Url.Action("Index", "Product", new { categoryId = category.CategoryId })" class="list-group-item list-group-item-action">
+                    @category.CategoryName
+                </a>
+            }
+        }
+        else
+        {
+            <p class="list-group-item">No categories available</p>
+        }
+    </div>
+</div>
+

@@ -1,0 +1,126 @@
+@page
+@model LaptopEcommerceAndMore.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Làm icon to hơn và tạo vùng click rộng hơn */
+    .btn-toggle-view {
+        font-size: 1.5rem; /* Tăng kích thước icon */
+        cursor: pointer;
+        padding: 5px 10px;
+        transition: all 0.2s ease-in-out;
+        color: #8D99AE;
+    }
+
+        .btn-toggle-view:hover {
+            color: #D10024; /* Màu đỏ đặc trưng của template Electro */
+            transform: scale(1.2); /* Phóng to nhẹ khi hover */
+        }
+
+    .data-value {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 16px;
+        margin-left: 10px;
+    }
+
+    .profile-card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="billing-details">
+                    <div class="section-title">
+                        <h3 class="title">Account Menu</h3>
+                    </div>
+                    <div class="list-group shadow-sm">
+                        <a href="#" class="list-group-item list-group-item-action active">Personal Information</a>
+                        <a href="#" class="list-group-item list-group-item-action">Order History</a>
+                        <a asp-page="/Account/Logout" class="list-group-item list-group-item-action text-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="billing-details">
+                    <div class="section-title">
+                        <h3 class="title">Your Profile</h3>
+                    </div>
+                    
+                    <div class="card profile-card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <div class="row mb-4">
+                                <div class="col-sm-4 text-muted">Username</div>
+                                <div class="col-sm-8 text-uppercase"><strong>@Model.CurrentUser.Username</strong></div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-sm-4 text-muted">Full Name</div>
+                                <div class="col-sm-8 text-dark">@Model.CurrentUser.FullName</div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-sm-4 text-muted">Email Address</div>
+                                <div class="col-sm-8 text-dark">@Model.CurrentUser.Email</div>
+                            </div>
+
+                            <hr />
+
+                            <div class="row mb-4 align-items-center">
+                                <div class="col-sm-4 text-muted">Phone Number</div>
+                                <div class="col-sm-8 d-flex align-items-center">
+                                    <i class="fa fa-eye-slash btn-toggle-view" id="iconPhone" onclick="toggleSecret('Phone')"></i>
+                                    <span id="textPhone" class="data-value text-success">@Model.MaskedPhone</span>
+                                    <input type="hidden" id="fullPhone" value="@Model.DecryptedPhone" />
+                                    <input type="hidden" id="maskedPhone" value="@Model.MaskedPhone" />
+                                </div>
+                            </div>
+
+                            <div class="row mb-4 align-items-center">
+                                <div class="col-sm-4 text-muted">Address</div>
+                                <div class="col-sm-8 d-flex align-items-center">
+                                    <i class="fa fa-eye-slash btn-toggle-view" id="iconAddress" onclick="toggleSecret('Address')"></i>
+                                    <span id="textAddress" class="data-value text-success">@Model.MaskedAddress</span>
+                                    <input type="hidden" id="fullAddress" value="@Model.DecryptedAddress" />
+                                    <input type="hidden" id="maskedAddress" value="@Model.MaskedAddress" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light p-4">
+                            <button class="primary-btn">Edit Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleSecret(type) {
+            const textElem = document.getElementById('text' + type);
+            const iconElem = document.getElementById('icon' + type);
+            const fullVal = document.getElementById('full' + type).value;
+            const maskedVal = document.getElementById('masked' + type).value;
+
+            if (textElem.innerText === maskedVal) {
+                // HIỆN THÔNG TIN
+                textElem.innerText = fullVal;
+                iconElem.classList.replace('fa-eye-slash', 'fa-eye');
+                textElem.classList.replace('text-success', 'text-primary');
+            } else {
+                // ẨN THÔNG TIN
+                textElem.innerText = maskedVal;
+                iconElem.classList.replace('fa-eye', 'fa-eye-slash');
+                textElem.classList.replace('text-primary', 'text-success');
+            }
+        }
+    </script>
+}

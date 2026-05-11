@@ -1,0 +1,87 @@
+@{
+    // Đồng bộ dùng GetString thay vì GetInt32
+    var userId = Context.Session.GetString("UserId");
+    var fullName = Context.Session.GetString("FullName");
+    var userName = Context.Session.GetString("UserName");
+    var currentPath = Context.Request.Path + Context.Request.QueryString;
+    var showSidebar = ViewData["ShowSidebar"] as bool? ?? true;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LaptopEcommerceAndMore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body style="padding-top: 70px !important;">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">999 Laptops</a>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item"><a class="nav-link text-dark" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" href="/Product">Products</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" href="/Category">Categories</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" href="/Compare">Compare</a></li>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        @if (!string.IsNullOrEmpty(userId))
+                        {
+                            <li class="nav-item">
+                                @await Component.InvokeAsync("HeaderBadges")
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-info" href="/Account/Profile">
+                                    <i class="fa fa-user"></i> @(string.IsNullOrWhiteSpace(userName) ? fullName : userName)
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger" href="/Account/Login?handler=Logout">Logout</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-primary" href="/Account/Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-success" href="/Account/Register">Register</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid" style="margin-top: 20px;">
+        <div class="row">
+            @if (showSidebar)
+            {
+                <div class="col-md-3">
+                    @await Component.InvokeAsync("CategoryMenu")
+                </div>
+                <div class="col-md-9">
+                    <main role="main" class="pb-3">@RenderBody()</main>
+                </div>
+            }
+            else
+            {
+                <div class="col-12">
+                    <main role="main" class="pb-3">@RenderBody()</main>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
