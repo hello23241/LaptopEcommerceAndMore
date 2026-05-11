@@ -60,5 +60,21 @@ app.MapControllerRoute(
     pattern: "{controller=Product}/{action=Index}/{id?}");
 app.MapControllers();
 app.MapRazorPages();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        DbInitializer.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database initialization.");
+    }
+}
+
+app.Run();
 
 app.Run();
