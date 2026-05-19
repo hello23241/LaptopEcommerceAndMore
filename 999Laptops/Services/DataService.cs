@@ -24,18 +24,46 @@ namespace LaptopEcommerceAndMore.Services
                 .ToListAsync();
         }
 
-        public async Task<List<Products>> GetProductsPageAsync(int pageNumber, int pageSize)
+        public async Task<List<Products>> GetProductsPageAsync(int pageNumber, int pageSize, int? categoryId = null, int? brandId = null)
         {
-            return await _context.Products
+            var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
+                .AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryID == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandID == brandId.Value);
+            }
+
+            return await query
                 .OrderBy(p => p.ProductID)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
         }
 
-        public async Task<int> GetProductCountAsync() => await _context.Products.CountAsync();
+        public async Task<int> GetProductCountAsync(int? categoryId = null, int? brandId = null)
+        {
+            var query = _context.Products.AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryID == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandID == brandId.Value);
+            }
+
+            return await query.CountAsync();
+        }
 
         public async Task<Products> GetProductByIdAsync(int id)
         {

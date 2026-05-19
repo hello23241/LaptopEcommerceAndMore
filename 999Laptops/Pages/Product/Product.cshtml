@@ -1,568 +1,736 @@
-﻿@page
+﻿@page "/ProductDetail/{id:int}"
+@model LaptopEcommerceAndMore.Pages.Product.ProductDetailModel
 @{
-	ViewData["Title"] = "Product Details";
-	ViewData["ShowSidebar"] = false;
-	Layout = "~/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.SingleProduct?.ProductName ?? "Product Details";
+    ViewData["ShowSidebar"] = false;
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+    var userId = HttpContext.Session.GetString("UserId");
+    var isLoggedIn = !string.IsNullOrEmpty(userId);
+
+    var currency = HttpContext.Session.GetString("Currency") ?? "USD";
+    var isVnd = currency == "VND";
+    var rate = isVnd ? Model.UsdToVndRate : 1m;
+
+    string FormatCurrency(decimal amount)
+    {
+        if (isVnd)
+        {
+            if (amount >= 1000000m)
+            {
+                decimal millions = amount / 1000000m;
+                return $"{millions:0.#}M VND";
+            }
+            else
+            {
+                decimal thousands = amount / 1000m;
+                return $"{thousands:0.#}K VND";
+            }
+        }
+        else
+        {
+            return $"${amount:N2}";
+        }
+    }
+
+    string azureBaseUrl = "https://laptopimages2026.blob.core.windows.net/product-images/";
+    string mainImageName = Model.SingleProduct?.ProductImage ?? "";
+    
+    string rawName = System.IO.Path.GetFileNameWithoutExtension(mainImageName).ToLower();
+    string extension = System.IO.Path.GetExtension(mainImageName).ToLower();
 }
 
-<!-- BREADCRUMB -->
-<div id="breadcrumb" class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
-			<div class="col-md-12">
-				<ul class="breadcrumb-tree">
-					<li><a href="#">Home</a></li>
-					<li><a href="#">All Categories</a></li>
-					<li><a href="#">Accessories</a></li>
-					<li><a href="#">Headphones</a></li>
-					<li class="active">Product name goes here</li>
-				</ul>
-			</div>
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
-</div>
-<!-- /BREADCRUMB -->
-<!-- SECTION -->
+<style>
+    .slider-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: #FBFBFC;
+        border: 1px solid #E4E7ED;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .slider-wrapper {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .slider-slide {
+        min-width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+    }
+    .slider-slide img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    .slider-zoom-image {
+        transition: transform 0.2s ease;
+        cursor: zoom-in;
+    }
+    .slider-zoom-image.slider-zooming {
+        transform: scale(1.6);
+    }
+    .slider-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(30, 31, 41, 0.7);
+        color: #FFF;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.2s ease;
+        z-index: 10;
+        opacity: 0;
+    }
+    .slider-container:hover .slider-btn { opacity: 1; }
+    .slider-btn:hover { background: #D10024; }
+    .slider-btn-prev { left: 10px; }
+    .slider-btn-next { right: 10px; }
+    
+    .thumb-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 450px;
+        overflow-y: auto;
+    }
+    .thumb-item {
+        border: 1px solid #E4E7ED;
+        padding: 5px;
+        cursor: pointer;
+        aspect-ratio: 1/1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #FFF;
+        transition: all 0.2s ease;
+    }
+    .thumb-item.active, .thumb-item:hover { border-color: #D10024; }
+    .thumb-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* CSS ĐÃ THÊM: Lớp phủ bảo vệ Form viết Review khi chưa Đăng nhập */
+    .review-form-wrapper {
+        position: relative;
+        background: #FFF;
+        padding: 20px 16px;
+        border: 1px solid #E4E7ED;
+        border-radius: 6px;
+    }
+    .review-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .review-card {
+        border: 1px solid #E4E7ED;
+        border-radius: 10px;
+        padding: 16px;
+        background: #FFF;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+    }
+    .review-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+    .review-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .review-card-date {
+        font-size: 12px;
+        color: #8D99AE;
+    }
+    .review-card-body {
+        color: #333;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .review-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        text-align: center;
+        padding: 20px;
+        border-radius: 6px;
+    }
+    .verified-badge {
+        color: #28a745;
+        font-size: 12px;
+        font-weight: 600;
+        background: #e8f5e9;
+        padding: 2px 6px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+    }
+    .rating-stars-display {
+        color: #FFB300;
+        margin-right: 5px;
+    }
+</style>
+
 <div class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
-			<!-- Product main img -->
-			<div class="col-md-5 col-md-push-2">
-				<div id="product-main-img">
-					<div class="product-preview">
-						<img src="~/img/product01.png" alt="">
-					</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5 col-md-push-2">
+                <div class="slider-container" id="productSlider">
+                    <div class="slider-wrapper" id="sliderWrapper">
+                        @if (!string.IsNullOrEmpty(mainImageName))
+                        {
+                            <div class="slider-slide" data-index="0">
+                                <img src="@(azureBaseUrl + mainImageName.ToLower())" alt="@Model.SingleProduct?.ProductName" class="slider-zoom-image">
+                            </div>
+                            @for (int i = 2; i <= 5; i++)
+                            {
+                                <div class="slider-slide" data-index="@(i-1)">
+                                    <img src="@(azureBaseUrl + rawName + "-" + i + extension)" alt="@Model.SingleProduct?.ProductName" class="sub-img-check slider-zoom-image">
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="slider-slide">
+                                <img src="~/img/product01.png" alt="No Image">
+                            </div>
+                        }
+                    </div>
+                    <button class="slider-btn slider-btn-prev" id="btnPrev"><i class="fa fa-angle-left"></i></button>
+                    <button class="slider-btn slider-btn-next" id="btnNext"><i class="fa fa-angle-right"></i></button>
+                </div>
+            </div>
 
-					<div class="product-preview">
-						<img src="~/img/product03.png" alt="">
-					</div>
+            <div class="col-md-2 col-md-pull-5">
+                <div class="thumb-list" id="thumbList">
+                    @if (!string.IsNullOrEmpty(mainImageName))
+                    {
+                        <div class="thumb-item active" data-target="0">
+                            <img src="@(azureBaseUrl + mainImageName.ToLower())">
+                        </div>
+                        @for (int i = 2; i <= 5; i++)
+                        {
+                            <div class="thumb-item" data-target="@(i-1)" style="display: none;">
+                                <img src="@(azureBaseUrl + rawName + "-" + i + extension)">
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
 
-					<div class="product-preview">
-						<img src="~/img/product06.png" alt="">
-					</div>
+            <div class="col-md-5">
+                <div class="product-details">
+                    <h2 class="product-name">@Model.SingleProduct?.ProductName</h2>
+                    <div>
+                        <div class="product-rating">
+                            @if (Model.ProductReviews.Any())
+                            {
+                                var avgRating = (int)Math.Round(Model.ProductReviews.Average(r => r.Rating));
+                                @for (int i = 1; i <= 5; i++) { <i class="fa @(i <= avgRating ? "fa-star" : "fa-star-o")" style="color: #FFB300;"></i> }
+                            }
+                            else
+                            {
+                                @for (int i = 1; i <= 5; i++) { <i class="fa fa-star-o"></i> }
+                            }
+                        </div>
+                        <a class="review-link" href="#product-tab">@Model.ProductReviews.Count Review(s) | Add your review</a>
+                    </div>
+                    <div>
+                        <h3 class="product-price">@FormatCurrency((Model.SingleProduct?.BasePrice ?? 0m) * rate)</h3>
+                        <span class="product-available">@(Model.SingleProduct?.StockQuantity > 0 ? "In Stock" : "Out of Stock")</span>
+                    </div>
 
-					<div class="product-preview">
-						<img src="~/img/product08.png" alt="">
-					</div>
-				</div>
-			</div>
-			<!-- /Product main img -->
-			<!-- Product thumb imgs -->
-			<div class="col-md-2  col-md-pull-5">
-				<div id="product-imgs">
-					<div class="product-preview">
-						<img src="~/img/product01.png" alt="">
-					</div>
+                    <form method="post" asp-page-handler="AddToCart" id="cartForm">
+                        <input type="hidden" name="productId" value="@Model.SingleProduct?.ProductID" />
+                        <div class="add-to-cart" style="margin-top: 25px;">
+                            <div class="qty-label">
+                                Qty
+                                <div class="input-number">
+                                    <input type="number" name="quantity" value="1" min="1" max="@(Model.SingleProduct?.StockQuantity ?? 1)">
+                                    <span class="qty-up">+</span>
+                                    <span class="qty-down">-</span>
+                                </div>
+                            </div>
+                            <button type="submit" class="add-to-cart-btn" @(Model.SingleProduct?.StockQuantity > 0 ? "" : "disabled")>
+                                <i class="fa fa-shopping-cart"></i> add to cart
+                            </button>
+                        </div>
+                    </form>
 
-					<div class="product-preview">
-						<img src="~/img/product03.png" alt="">
-					</div>
+                    <ul class="product-btns" style="margin-top: 20px; padding-left: 0; list-style: none; display: flex; gap: 15px;">
+                        <li>
+                            <form method="post" asp-page-handler="AddToWishlist" id="wishlistForm" style="display: inline;">
+                                <input type="hidden" name="productId" value="@Model.SingleProduct?.ProductID" />
+                                <button type="submit" style="background: none; border: none; color: #1E1F29; font-weight: 700; font-size: 12px; text-transform: uppercase;">
+                                    <i class="fa fa-heart-o" style="color: #D10024; margin-right: 5px;"></i> add to wishlist
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
 
-					<div class="product-preview">
-						<img src="~/img/product06.png" alt="">
-					</div>
+                    <ul class="product-links">
+                        <li>Category:</li>
+                        @if (Model.SingleProduct?.Category != null)
+                        {
+                            <li><a asp-page="/Product/Products" asp-route-categoryId="@Model.SingleProduct.Category.CategoryId">@Model.SingleProduct.Category.CategoryName</a></li>
+                        }
+                    </ul>
 
-					<div class="product-preview">
-						<img src="~/img/product08.png" alt="">
-					</div>
-				</div>
-			</div>
-			<!-- /Product thumb imgs -->
-			<!-- Product details -->
-			<div class="col-md-5">
-				<div class="product-details">
-					<h2 class="product-name">product name goes here</h2>
-					<div>
-						<div class="product-rating">
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star-o"></i>
-						</div>
-						<a class="review-link" href="#">10 Review(s) | Add your review</a>
-					</div>
-					<div>
-						<h3 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h3>
-						<span class="product-available">In Stock</span>
-					</div>
-					<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <ul class="product-links">
+                        <li>Brand:</li>
+                        @if (Model.SingleProduct?.Brand != null)
+                        {
+                            <li><a asp-page="/Product/Products" asp-route-brandId="@Model.SingleProduct.Brand.BrandId">@Model.SingleProduct.Brand.BrandName</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-12">
+                <div id="product-tab">
+                    <ul class="tab-nav">
+                        <li class="active"><a data-bs-toggle="tab" href="#tab1">Description</a></li>
+                        @if (Model.SingleProduct?.ProductDetails != null)
+                        {
+                            <li><a data-bs-toggle="tab" href="#tab2">Details</a></li>
+                        }
+                        <li id="reviewTabHeader"><a data-bs-toggle="tab" href="#tab3">Reviews (@Model.ProductReviews.Count)</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tab1" class="tab-pane fade show active">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>@Model.SingleProduct?.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.SingleProduct?.ProductDetails != null)
+                        {
+                            <div id="tab2" class="tab-pane fade">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul class="custom-specs-list" style="list-style-type: none; padding-left: 0; line-height: 2;">
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.CPU))
+                                            { <li><strong style="width: 150px; display: inline-block;">CPU:</strong> @Model.SingleProduct.ProductDetails.CPU</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.RAM))
+                                            { <li><strong style="width: 150px; display: inline-block;">RAM:</strong> @Model.SingleProduct.ProductDetails.RAM</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.GPU))
+                                            { <li><strong style="width: 150px; display: inline-block;">GPU (VGA):</strong> @Model.SingleProduct.ProductDetails.GPU</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.Storage))
+                                            { <li><strong style="width: 150px; display: inline-block;">Storage:</strong> @Model.SingleProduct.ProductDetails.Storage</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.Display))
+                                            { <li><strong style="width: 150px; display: inline-block;">Display:</strong> @Model.SingleProduct.ProductDetails.Display</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.Battery))
+                                            { <li><strong style="width: 150px; display: inline-block;">Battery:</strong> @Model.SingleProduct.ProductDetails.Battery</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.Weight))
+                                            { <li><strong style="width: 150px; display: inline-block;">Weight:</strong> @Model.SingleProduct.ProductDetails.Weight</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.OS))
+                                            { <li><strong style="width: 150px; display: inline-block;">OS:</strong> @Model.SingleProduct.ProductDetails.OS</li> }
+                                            @if (!string.IsNullOrEmpty(Model.SingleProduct.ProductDetails.Extra))
+                                            { <li><strong style="width: 150px; display: inline-block;">Extra Info:</strong> @Model.SingleProduct.ProductDetails.Extra</li> }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div id="tab3" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="reviews" style="max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                                        @if (Model.ProductReviews != null && Model.ProductReviews.Any())
+                                        {
+                                            <div class="review-list">
+                                                @foreach (var review in Model.ProductReviews)
+                                                {
+                                                    <div class="review-card">
+                                                        <div class="review-card-header">
+                                                            <div class="review-card-meta">
+                                                                <strong class="name" style="font-size: 14px; color: #1E1F29;">@(review.User?.Username ?? "Anonymous")</strong>
+                                                                @if (review.IsPurchased)
+                                                                {
+                                                                    <span class="verified-badge"><i class="fa fa-check-circle"></i> Verified Purchase</span>
+                                                                }
+                                                            </div>
+                                                            <span class="review-card-date"><i class="fa fa-clock-o"></i> @review.ReviewDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                        </div>
+                                                        <div class="rating-stars-display" style="margin-bottom: 10px;">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                <i class="fa @(i <= review.Rating ? "fa-star" : "fa-star-o")" style="color: #FFB300;"></i>
+                                                            }
+                                                        </div>
+                                                        <div class="review-card-body">
+                                                            @review.Comment
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-light text-center text-muted" style="border: 1px dashed #DDD;">
+                                                No reviews yet for this product. Be the first to share your thoughts!
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="review-form-wrapper">
+                                        
+                                        @if (!isLoggedIn)
+                                        {
+                                            <div class="review-overlay">
+                                                <i class="fa fa-lock mb-3" style="font-size: 35px; color: #D10024;"></i>
+                                                <h5 class="font-weight-bold" style="color: #1E1F29; margin-bottom: 8px;">Want to write a review?</h5>
+                                                <p class="text-muted" style="font-size: 13px; max-width: 250px; margin-bottom: 15px;">Only registered members can submit product evaluations.</p>
+                                                <button type="button" class="primary-btn" id="reviewLoginButton" data-return-url="/ProductDetail/@Model.SingleProduct?.ProductID" style="padding: 8px 25px; font-size: 12px; border-radius: 4px;">
+                                                    Login / Register
+                                                </button>
+                                            </div>
+                                        }
 
-					<div class="product-options">
-						<label>
-							Size
-							<select class="input-select">
-								<option value="0">X</option>
-							</select>
-						</label>
-						<label>
-							Color
-							<select class="input-select">
-								<option value="0">Red</option>
-							</select>
-						</label>
-					</div>
-
-					<div class="add-to-cart">
-						<div class="qty-label">
-							Qty
-							<div class="input-number">
-								<input type="number">
-								<span class="qty-up">+</span>
-								<span class="qty-down">-</span>
-							</div>
-						</div>
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-					</div>
-
-					<ul class="product-btns">
-						<li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
-						<li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
-					</ul>
-
-					<ul class="product-links">
-						<li>Category:</li>
-						<li><a href="#">Headphones</a></li>
-						<li><a href="#">Accessories</a></li>
-					</ul>
-
-					<ul class="product-links">
-						<li>Share:</li>
-						<li><a href="#"><i class="fa fa-facebook"></i></a></li>
-						<li><a href="#"><i class="fa fa-twitter"></i></a></li>
-						<li><a href="#"><i class="fa fa-google-plus"></i></a></li>
-						<li><a href="#"><i class="fa fa-envelope"></i></a></li>
-					</ul>
-
-				</div>
-			</div>
-			<!-- /Product details -->
-			<!-- Product tab -->
-			<div class="col-md-12">
-				<div id="product-tab">
-					<!-- product tab nav -->
-					<ul class="tab-nav">
-						<li class="active"><a data-bs-toggle="tab" href="#tab1">Description</a></li>
-						<li><a data-bs-toggle="tab" href="#tab2">Details</a></li>
-						<li><a data-bs-toggle="tab" href="#tab3">Reviews (3)</a></li>
-					</ul>
-					<!-- /product tab nav -->
-					<!-- product tab content -->
-					<div class="tab-content">
-						<!-- tab1  -->
-						<div id="tab1" class="tab-pane fade show active">
-							<div class="row">
-								<div class="col-md-12">
-									<p>Get premium performance with a clean, modern design made for everyday work, school, and entertainment.</p>
-									<ul>
-										<li>Fast boot, responsive apps, and smooth multitasking</li>
-										<li>Vivid display optimized for long sessions</li>
-										<li>Durable build with a comfortable keyboard</li>
-									</ul>
-								</div>
-							</div>
-						</div>
-						<!-- /tab1  -->
-						<!-- tab2  -->
-						<div id="tab2" class="tab-pane fade">
-							<div class="row">
-								<div class="col-md-12">
-									<ul>
-										<li>Display: 15.6" FHD, anti-glare</li>
-										<li>Processor: 12th Gen Intel Core</li>
-										<li>Memory: 16GB DDR5</li>
-										<li>Storage: 512GB NVMe SSD</li>
-										<li>Graphics: Integrated UHD</li>
-										<li>Battery: Up to 10 hours</li>
-									</ul>
-								</div>
-							</div>
-						</div>
-						<!-- /tab2  -->
-						<!-- tab3  -->
-						<div id="tab3" class="tab-pane fade">
-							<div class="row">
-								<!-- Rating -->
-								<div class="col-md-3">
-									<div id="rating">
-										<div class="rating-avg">
-											<span>4.5</span>
-											<div class="rating-stars">
-												<i class="fa fa-star"></i>
-												<i class="fa fa-star"></i>
-												<i class="fa fa-star"></i>
-												<i class="fa fa-star"></i>
-												<i class="fa fa-star-o"></i>
-											</div>
-										</div>
-										<ul class="rating">
-											<li>
-												<div class="rating-stars">
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-												</div>
-												<div class="rating-progress">
-													<div style="width: 80%;"></div>
-												</div>
-												<span class="sum">3</span>
-											</li>
-											<li>
-												<div class="rating-stars">
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star-o"></i>
-												</div>
-												<div class="rating-progress">
-													<div style="width: 60%;"></div>
-												</div>
-												<span class="sum">2</span>
-											</li>
-											<li>
-												<div class="rating-stars">
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-												</div>
-												<div class="rating-progress">
-													<div></div>
-												</div>
-												<span class="sum">0</span>
-											</li>
-											<li>
-												<div class="rating-stars">
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-												</div>
-												<div class="rating-progress">
-													<div></div>
-												</div>
-												<span class="sum">0</span>
-											</li>
-											<li>
-												<div class="rating-stars">
-													<i class="fa fa-star"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-													<i class="fa fa-star-o"></i>
-												</div>
-												<div class="rating-progress">
-													<div></div>
-												</div>
-												<span class="sum">0</span>
-											</li>
-										</ul>
-									</div>
-								</div>
-								<!-- /Rating -->
-								<!-- Reviews -->
-								<div class="col-md-6">
-									<div id="reviews">
-										<ul class="reviews">
-											<li>
-												<div class="review-heading">
-													<h5 class="name">John</h5>
-													<p class="date">27 DEC 2018, 8:0 PM</p>
-													<div class="review-rating">
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star-o empty"></i>
-													</div>
-												</div>
-												<div class="review-body">
-													<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
-												</div>
-											</li>
-											<li>
-												<div class="review-heading">
-													<h5 class="name">John</h5>
-													<p class="date">27 DEC 2018, 8:0 PM</p>
-													<div class="review-rating">
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star-o empty"></i>
-													</div>
-												</div>
-												<div class="review-body">
-													<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
-												</div>
-											</li>
-											<li>
-												<div class="review-heading">
-													<h5 class="name">John</h5>
-													<p class="date">27 DEC 2018, 8:0 PM</p>
-													<div class="review-rating">
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star"></i>
-														<i class="fa fa-star-o empty"></i>
-													</div>
-												</div>
-												<div class="review-body">
-													<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
-												</div>
-											</li>
-										</ul>
-										<ul class="reviews-pagination">
-											<li class="active">1</li>
-											<li><a href="#">2</a></li>
-											<li><a href="#">3</a></li>
-											<li><a href="#">4</a></li>
-											<li><a href="#"><i class="fa fa-angle-right"></i></a></li>
-										</ul>
-									</div>
-								</div>
-								<!-- /Reviews -->
-								<!-- Review Form -->
-								<div class="col-md-3">
-									<div id="review-form">
-										<form class="review-form">
-											<input class="input" type="text" placeholder="Your Name">
-											<input class="input" type="email" placeholder="Your Email">
-											<textarea class="input" placeholder="Your Review"></textarea>
-											<div class="input-rating">
-												<span>Your Rating: </span>
-												<div class="stars">
-													<input id="star5" name="rating" value="5" type="radio"><label for="star5"></label>
-													<input id="star4" name="rating" value="4" type="radio"><label for="star4"></label>
-													<input id="star3" name="rating" value="3" type="radio"><label for="star3"></label>
-													<input id="star2" name="rating" value="2" type="radio"><label for="star2"></label>
-													<input id="star1" name="rating" value="1" type="radio"><label for="star1"></label>
-												</div>
-											</div>
-											<button class="primary-btn">Submit</button>
-										</form>
-									</div>
-								</div>
-								<!-- /Review Form -->
-							</div>
-						</div>
-						<!-- /tab3  -->
-					</div>
-					<!-- /product tab content  -->
-				</div>
-			</div>
-			<!-- /product tab -->
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
+                                        <form class="review-form" method="post" asp-page-handler="AddReview">
+                                            <input type="hidden" name="productId" value="@Model.SingleProduct?.ProductID" />
+                                            
+                                            <div class="form-group mb-3">
+                                                <label class="form-label" style="font-weight: 700; color: #1E1F29;">Username</label>
+                                                <input class="form-control" type="text" value="@Model.CurrentUsername" style="background-color: #F8F9FA; cursor: not-allowed;" readonly />
+                                            </div>
+                                            
+                                            <div class="form-group mb-3">
+                                                <label class="form-label" style="font-weight: 700; color: #1E1F29;">
+                                                    Your Rating <span style="color: #D10024;">*</span>: 
+                                                    <span id="ratingOutput" style="font-weight: 800; color: #FFB300; margin-left: 5px;">5 <i class="fa fa-star"></i></span>
+                                                </label>
+                                                <input type="range" name="rating" id="ratingSlider" class="form-range w-100" min="1" max="5" value="5" style="accent-color: #D10024;" />
+                                                <div class="d-flex justify-content-between text-muted" style="font-size: 11px; padding: 0 5px;">
+                                                    <span>1 Star</span>
+                                                    <span>2 Stars</span>
+                                                    <span>3 Stars</span>
+                                                    <span>4 Stars</span>
+                                                    <span>5 Stars</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group mb-4">
+                                                <label class="form-label" style="font-weight: 700; color: #1E1F29;">Your Review <span style="color: #D10024;">*</span></label>
+                                                <textarea class="form-control" name="comment" placeholder="Write your comments here..." rows="4" style="border: 1px solid #E4E7ED; border-radius: 4px; resize: none;" required></textarea>
+                                            </div>
+                                            
+                                            <button type="submit" class="primary-btn w-100" style="border-radius: 4px; font-weight: 700; text-transform: uppercase;">Submit Review</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- /SECTION -->
-<!-- Section -->
-<div class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
 
-			<div class="col-md-12">
-				<div class="section-title text-center">
-					<h3 class="title">Related Products</h3>
-				</div>
-			</div>
-
-			<!-- product -->
-			<div class="col-md-3 col-xs-6">
-				<div class="product">
-					<div class="product-img">
-						<img src="~/img/product01.png" alt="">
-						<div class="product-label">
-							<span class="sale">-30%</span>
-						</div>
-					</div>
-					<div class="product-body">
-						<p class="product-category">Category</p>
-						<h3 class="product-name"><a href="#">product name goes here</a></h3>
-						<h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-						<div class="product-rating">
-						</div>
-						<div class="product-btns">
-							<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-							<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-							<button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-						</div>
-					</div>
-					<div class="add-to-cart">
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-					</div>
-				</div>
-			</div>
-			<!-- /product -->
-			<!-- product -->
-			<div class="col-md-3 col-xs-6">
-				<div class="product">
-					<div class="product-img">
-						<img src="~/img/product02.png" alt="">
-						<div class="product-label">
-							<span class="new">NEW</span>
-						</div>
-					</div>
-					<div class="product-body">
-						<p class="product-category">Category</p>
-						<h3 class="product-name"><a href="#">product name goes here</a></h3>
-						<h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-						<div class="product-rating">
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-						</div>
-						<div class="product-btns">
-							<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-							<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-							<button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-						</div>
-					</div>
-					<div class="add-to-cart">
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-					</div>
-				</div>
-			</div>
-			<!-- /product -->
-			<!-- product -->
-			<div class="col-md-3 col-xs-6">
-				<div class="product">
-					<div class="product-img">
-						<img src="~/img/product03.png" alt="">
-					</div>
-					<div class="product-body">
-						<p class="product-category">Category</p>
-						<h3 class="product-name"><a href="#">product name goes here</a></h3>
-						<h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-						<div class="product-rating">
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star-o"></i>
-						</div>
-						<div class="product-btns">
-							<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-							<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-							<button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-						</div>
-					</div>
-					<div class="add-to-cart">
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-					</div>
-				</div>
-			</div>
-			<!-- /product -->
-			<!-- product -->
-			<div class="col-md-3 col-xs-6">
-				<div class="product">
-					<div class="product-img">
-						<img src="~/img/product04.png" alt="">
-					</div>
-					<div class="product-body">
-						<p class="product-category">Category</p>
-						<h3 class="product-name"><a href="#">product name goes here</a></h3>
-						<h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
-						<div class="product-rating">
-						</div>
-						<div class="product-btns">
-							<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-							<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-							<button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-						</div>
-					</div>
-					<div class="add-to-cart">
-						<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-					</div>
-				</div>
-			</div>
-			<!-- /product -->
-
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
-</div>
-<!-- /Section -->
-<!-- NEWSLETTER -->
-<div id="newsletter" class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
-			<div class="col-md-12">
-				<div class="newsletter">
-					<p>Sign Up for the <strong>NEWSLETTER</strong></p>
-					<form>
-						<input class="input" type="email" placeholder="Enter Your Email">
-						<button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
-					</form>
-					<ul class="newsletter-follow">
-						<li>
-							<a href="#"><i class="fa fa-facebook"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-twitter"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-instagram"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-pinterest"></i></a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
-</div>
-<!-- /NEWSLETTER -->
 @section Scripts {
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			var tabLinks = document.querySelectorAll('#product-tab .tab-nav a');
-			var tabPanes = document.querySelectorAll('#product-tab .tab-content .tab-pane');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Khối xử lý chuyển đổi Tab thông số
+            var tabLinks = document.querySelectorAll('#product-tab .tab-nav a');
+            var tabPanes = document.querySelectorAll('#product-tab .tab-content .tab-pane');
+            tabLinks.forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var target = link.getAttribute('href');
+                    if (!target) return;
+                    tabLinks.forEach(function (navLink) { navLink.parentElement?.classList.remove('active'); });
+                    link.parentElement?.classList.add('active');
+                    tabPanes.forEach(function (pane) {
+                        var matches = '#' + pane.id === target;
+                        pane.classList.toggle('show', matches);
+                        pane.classList.toggle('active', matches);
+                    });
+                });
+            });
 
-			tabLinks.forEach(function (link) {
-				link.addEventListener('click', function (event) {
-					event.preventDefault();
-					var target = link.getAttribute('href');
-					if (!target) {
-						return;
-					}
+            // Nếu người dùng click vào link "Review(s)" ở đầu trang, tự nhảy xuống tab review
+            const reviewLink = document.querySelector('.review-link');
+            if (reviewLink) {
+                reviewLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('reviewTabHeader').querySelector('a').click();
+                    document.getElementById('product-tab').scrollIntoView({ behavior: 'smooth' });
+                });
+            }
 
-					tabLinks.forEach(function (navLink) {
-						navLink.parentElement?.classList.remove('active');
-					});
-					link.parentElement?.classList.add('active');
+            // --- ĐÃ THÊM: SỰ KIỆN ĐỒNG BỘ THANH SLIDER SAO ĐÁNH GIÁ ---
+            const slider = document.getElementById('ratingSlider');
+            const output = document.getElementById('ratingOutput');
+            if (slider && output) {
+                slider.addEventListener('input', function() {
+                    output.innerHTML = `${this.value} <i class="fa fa-star"></i>`;
+                });
+            }
 
-					tabPanes.forEach(function (pane) {
-						var matches = '#' + pane.id === target;
-						pane.classList.toggle('show', matches);
-						pane.classList.toggle('active', matches);
-					});
-				});
-			});
-		});
-	</script>
+            // --- LOGIC SLIDER ẢNH THÔNG MINH ---
+            const wrapper = document.getElementById('sliderWrapper');
+            const sliderContainer = document.getElementById('productSlider');
+            const thumbs = Array.from(document.querySelectorAll('.thumb-item'));
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            
+            let validIndices = [0]; 
+            let currentIndex = 0;
+            let autoSlideInterval;
+
+            const subImages = document.querySelectorAll('.sub-img-check');
+            let checksCompleted = 0;
+
+            function handleImageLoaded(img, slideDiv, index) {
+                if (img.dataset.processed) return;
+                img.dataset.processed = 'true';
+                validIndices.push(index);
+                validIndices.sort((a, b) => a - b);
+                const thumb = document.querySelector(`.thumb-item[data-target="${index}"]`);
+                if (thumb) thumb.style.display = 'flex';
+                checkFinished();
+            }
+
+            function handleImageError(img, slideDiv, index) {
+                if (img.dataset.processed) return;
+                img.dataset.processed = 'true';
+                slideDiv.remove();
+                const thumb = document.querySelector(`.thumb-item[data-target="${index}"]`);
+                if (thumb) thumb.remove();
+                checkFinished();
+            }
+
+            if (subImages.length > 0) {
+                subImages.forEach((img) => {
+                    const slideDiv = img.closest('.slider-slide');
+                    const index = parseInt(slideDiv.getAttribute('data-index'));
+
+                    img.addEventListener('load', function() { handleImageLoaded(img, slideDiv, index); });
+                    img.addEventListener('error', function() { handleImageError(img, slideDiv, index); });
+
+                    if (img.complete) {
+                        if (img.naturalWidth > 0) { handleImageLoaded(img, slideDiv, index); } 
+                        else { handleImageError(img, slideDiv, index); }
+                    }
+                });
+            } else {
+                resetAutoSlide();
+            }
+
+            function checkFinished() {
+                checksCompleted++;
+                if (checksCompleted === subImages.length) { resetAutoSlide(); }
+            }
+
+            function updateSlider(targetIndex) {
+                if (!validIndices.includes(targetIndex)) return;
+                currentIndex = targetIndex;
+                const slideOrder = validIndices.indexOf(currentIndex);
+                wrapper.style.transform = `translateX(-${slideOrder * 100}%)`;
+                thumbs.forEach(t => t.classList.remove('active'));
+                const activeThumb = document.querySelector(`.thumb-item[data-target="${currentIndex}"]`);
+                if (activeThumb) activeThumb.classList.add('active');
+            }
+
+            function nextSlide() {
+                let currentPos = validIndices.indexOf(currentIndex);
+                let nextPos = currentPos + 1;
+                if (nextPos >= validIndices.length) { nextPos = 0; }
+                updateSlider(validIndices[nextPos]);
+            }
+
+            function prevSlide() {
+                let currentPos = validIndices.indexOf(currentIndex);
+                let prevPos = currentPos - 1;
+                if (prevPos < 0) { prevPos = validIndices.length - 1; }
+                updateSlider(validIndices[prevPos]);
+            }
+
+            btnNext.addEventListener('click', function() { nextSlide(); resetAutoSlide(); });
+            btnPrev.addEventListener('click', function() { prevSlide(); resetAutoSlide(); });
+
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    const target = parseInt(this.getAttribute('data-target'));
+                    updateSlider(target);
+                    resetAutoSlide();
+                });
+            });
+
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                if (validIndices.length > 1) { autoSlideInterval = setInterval(nextSlide, 2000); }
+            }
+
+            function stopAutoSlide() {
+                clearInterval(autoSlideInterval);
+            }
+
+            setTimeout(() => { if (validIndices.length <= 1) { btnPrev.style.display = 'none'; btnNext.style.display = 'none'; } }, 1000);
+
+            if (sliderContainer) {
+                let zoomDelayTimer;
+                let lastHoverEvent;
+                let zoomActive = false;
+
+                sliderContainer.addEventListener('mouseenter', function () {
+                    resetAutoSlide();
+                    stopAutoSlide();
+                });
+                sliderContainer.addEventListener('mouseleave', function () {
+                    resetAutoSlide();
+                });
+                sliderContainer.addEventListener('mousemove', function (event) {
+                    const img = event.target.closest('.slider-zoom-image');
+                    if (!img || !sliderContainer.contains(img)) return;
+
+                    lastHoverEvent = { event, img };
+                    clearTimeout(zoomDelayTimer);
+                    if (zoomActive) {
+                        const rect = img.getBoundingClientRect();
+                        const offsetX = lastHoverEvent.event.clientX - rect.left;
+                        const offsetY = lastHoverEvent.event.clientY - rect.top;
+                        const posX = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+                        const posY = Math.max(0, Math.min(100, (offsetY / rect.height) * 100));
+                        img.style.transformOrigin = `${posX}% ${posY}%`;
+                        return;
+                    }
+
+                    zoomDelayTimer = setTimeout(function () {
+                        const rect = img.getBoundingClientRect();
+                        const offsetX = lastHoverEvent.event.clientX - rect.left;
+                        const offsetY = lastHoverEvent.event.clientY - rect.top;
+                        const posX = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+                        const posY = Math.max(0, Math.min(100, (offsetY / rect.height) * 100));
+                        img.classList.add('slider-zooming');
+                        img.style.transformOrigin = `${posX}% ${posY}%`;
+                        zoomActive = true;
+                    }, 200);
+                });
+                sliderContainer.addEventListener('mouseleave', function () {
+                    clearTimeout(zoomDelayTimer);
+                    lastHoverEvent = null;
+                    zoomActive = false;
+                    sliderContainer.querySelectorAll('.slider-zoom-image').forEach(img => {
+                        img.classList.remove('slider-zooming');
+                        img.style.transformOrigin = '';
+                    });
+                });
+                sliderContainer.addEventListener('click', function (event) {
+                    const img = event.target.closest('.slider-zoom-image');
+                    if (!img) return;
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.inset = '0';
+                    overlay.style.background = 'rgba(0, 0, 0, 0.75)';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.zIndex = '9999';
+
+                    const expandedImg = document.createElement('img');
+                    expandedImg.src = img.getAttribute('src');
+                    expandedImg.alt = img.getAttribute('alt') || 'Expanded image';
+                    expandedImg.style.maxWidth = '92%';
+                    expandedImg.style.maxHeight = '92%';
+                    expandedImg.style.objectFit = 'contain';
+                    expandedImg.style.cursor = 'zoom-out';
+
+                    overlay.appendChild(expandedImg);
+                    document.body.appendChild(overlay);
+
+                    function closeOverlay() {
+                        overlay.remove();
+                    }
+
+                    overlay.addEventListener('click', closeOverlay);
+                    document.addEventListener('keydown', function onKeyDown(e) {
+                        if (e.key === 'Escape') {
+                            closeOverlay();
+                            document.removeEventListener('keydown', onKeyDown);
+                        }
+                    });
+                });
+            }
+
+            // --- GIỮ NGUYÊN: Luồng Login Modal của Giỏ hàng ---
+            const isLoggedIn = @(!string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")) ? "true" : "false");
+            const cartForm = document.getElementById('cartForm');
+            const wishlistForm = document.getElementById('wishlistForm');
+            const loginModalReturnUrlInput = document.querySelector('#loginModal form input[name="returnUrl"]');
+            const defaultReturnUrl = "@(HttpContext.Request.Path + HttpContext.Request.QueryString)";
+
+            function openLoginModal(targetPageUrl) {
+                if (loginModalReturnUrlInput) { loginModalReturnUrlInput.value = targetPageUrl; }
+                var loginModalElement = document.getElementById('loginModal');
+                if (loginModalElement) {
+                    var loginModal = new bootstrap.Modal(loginModalElement);
+                    loginModal.show();
+                }
+            }
+
+            if (cartForm) {
+                cartForm.addEventListener('submit', function (event) {
+                    if (!isLoggedIn) { event.preventDefault(); openLoginModal('/Cart'); }
+                });
+            }
+
+            if (wishlistForm) {
+                wishlistForm.addEventListener('submit', function (event) {
+                    if (!isLoggedIn) { event.preventDefault(); openLoginModal('/Wishlist'); }
+                });
+            }
+
+            const headerCartBtn = document.querySelector('a[data-cart-page="true"]');
+            if (headerCartBtn && !isLoggedIn) {
+                headerCartBtn.addEventListener('click', function (event) {
+                    event.preventDefault(); openLoginModal('/Cart');
+                });
+            }
+
+            const reviewLoginButton = document.getElementById('reviewLoginButton');
+            if (reviewLoginButton && !isLoggedIn) {
+                reviewLoginButton.addEventListener('click', function () {
+                    const returnUrl = reviewLoginButton.getAttribute('data-return-url') || defaultReturnUrl;
+                    openLoginModal(returnUrl);
+                });
+            }
+            
+            var loginModalElement = document.getElementById('loginModal');
+            if (loginModalElement) {
+                loginModalElement.addEventListener('hidden.bs.modal', function () {
+                    if (loginModalReturnUrlInput) loginModalReturnUrlInput.value = defaultReturnUrl;
+                });
+            }
+        });
+    </script>
 }

@@ -36,23 +36,20 @@ namespace LaptopEcommerceAndMore.Data
                 .HasForeignKey(p => p.BrandID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Categories>()
+                .HasOne(c => c.ParentCategory)
+                .WithMany(c => c.Children)
+                .HasForeignKey(c => c.ParentID)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<OrderDetails>()
                 .HasOne(od => od.Order)
                 .WithMany(o => o.OrderDetails)
                 .HasForeignKey(od => od.OrderID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<OrderDetails>()
-                .HasOne(od => od.Product)
-                .WithMany(p => p.OrderDetails)
-                .HasForeignKey(od => od.ProductID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Categories>()
-                .HasOne(c => c.ParentCategory)
-                .WithMany(c => c.Children)
-                .HasForeignKey(c => c.ParentID)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Categories>().HasIndex(c => c.Slug).IsUnique();
+            modelBuilder.Entity<Users>().HasIndex(u => u.Username).IsUnique();
         }
     }
 }

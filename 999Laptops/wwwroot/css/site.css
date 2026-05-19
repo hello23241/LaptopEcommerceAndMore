@@ -85,3 +85,15 @@ header {
 }
 
 /* Content containers - no z-index needed, let them flow naturally */
+
+/* Custom CSS định hình hiệu ứng Hover cho menu đổi tiền tệ trên Header */
+.style-currency-link:hover {
+    background-color: #D10024 !important; /* Đổi sang màu đỏ thương hiệu khi hover */
+    color: #FFFFFF !important;
+    text-decoration: none;
+}
+
+.dropdown-menu {
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}

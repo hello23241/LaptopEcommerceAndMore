@@ -34,11 +34,11 @@ namespace LaptopEcommerceAndMore.Pages.Account
 
             if (mailFlag == "Success")
             {
-                StatusMessage = "Mã xác th?c dã du?c g?i thành công!";
+                StatusMessage = "Verification code has been sent!";
             }
             else if (mailFlag == "Failed")
             {
-                StatusMessage = "G?i mail th?t b?i. Vui lòng ki?m tra l?i email ho?c g?i l?i mã.";
+                StatusMessage = "Failed to send email. Please check your email or try resending the code.";
             }
 
             ShowResend = (user != null && user.CodeExpiry < DateTime.Now) || (mailFlag == "Failed");
@@ -56,7 +56,7 @@ namespace LaptopEcommerceAndMore.Pages.Account
 
                 try
                 {
-                    await _emailService.SendEmailAsync(user.Email, "Mã xác th?c m?i", $"Mã m?i là: {newOtp}");
+                    await _emailService.SendEmailAsync(user.Email, "New Verification Code", $"Your new verification code is: {newOtp}");
                     TempData["MailStatus"] = "Success";
                 }
                 catch
@@ -71,7 +71,7 @@ namespace LaptopEcommerceAndMore.Pages.Account
         {
             if (string.IsNullOrEmpty(OtpCode) || OtpCode.Length < 6)
             {
-                ModelState.AddModelError(string.Empty, "Vui lòng nh?p d? 6 ch? s?.");
+                ModelState.AddModelError(string.Empty, "Please enter a valid 6-digit verification code.");
                 return Page();
             }
 
@@ -79,7 +79,7 @@ namespace LaptopEcommerceAndMore.Pages.Account
 
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Không tìm th?y thông tin ngu?i dùng.");
+                ModelState.AddModelError(string.Empty, "Can't find user information.");
                 return Page();
             }
             if (user.EmailConfirmationCode == OtpCode)

@@ -26,7 +26,14 @@
                         @foreach (var item in Model.Cart.Items)
                         {
                             <tr>
-                                <td>@item.ProductName</td>
+                                <td>
+                                    <a href="/ProductDetail/@item.ProductId"
+                                           style="text-decoration: none; color: #1E1F29; font-weight: 600; transition: color 0.2s ease-in-out;"
+                                           onmouseover="this.style.color='#D10024'"
+                                           onmouseout="this.style.color='#1E1F29'">
+                                        @item.ProductName
+                                    </a>
+                                </td>
                                 <td>$@item.Price.ToString("F2")</td>
                                 <td>
                                     <form method="post" asp-page-handler="UpdateQuantity" class="d-flex gap-2">

@@ -1,22 +1,32 @@
-@model LaptopEcommerceAndMore.ViewComponents.HeaderBadgesViewModel
+@model LaptopEcommerceAndMore.ViewComponents.HeaderBadgesViewComponent.HeaderBadgesViewModel
 
-<div>
-    <a href="/Wishlist">
-        <i class="fa fa-heart-o"></i>
-        <span>Your Wishlist</span>
+<div class="wishlist-btn-box" style="display: inline-block; min-width: 90px; margin-right: 15px;">
+    <a asp-page="/Wishlist"
+           onclick="window.location.href='/Wishlist'; return true;"
+           style="display: block !important; position: relative; text-align: center; cursor: pointer !important;">
+        <i class="fa fa-heart-o" style="color: #FFF; font-size: 18px; pointer-events: none;"></i>
+        <span style="color: #FFF; display: block; font-size: 12px; margin-top: 5px; pointer-events: none;">Your Wishlist</span>
         @if (Model.WishlistCount > 0)
         {
-            <div class="qty">@Model.WishlistCount</div>
+            <div class="qty" style="position: absolute; right: 10px; top: -10px; background-color: #D10024; color: #FFF; font-size: 10px; font-weight: 700; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; pointer-events: none;">
+                @Model.WishlistCount
+            </div>
         }
     </a>
 </div>
-<div class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="/Cart/Cart" style="cursor:pointer">
-        <i class="fa fa-shopping-cart"></i>
-        <span>Your Cart</span>
+
+<div class="cart-btn-box" style="display: inline-block; min-width: 90px;">
+    <a asp-page="/Cart/Cart"
+           data-cart-page="true"
+           onclick="window.location.href='/Cart/Cart'; return true;"
+           style="display: block !important; position: relative; text-align: center; cursor: pointer !important;">
+        <i class="fa fa-shopping-cart" style="color: #FFF; font-size: 18px; pointer-events: none;"></i>
+        <span style="color: #FFF; display: block; font-size: 12px; margin-top: 5px; pointer-events: none;">Your Cart</span>
         @if (Model.CartCount > 0)
         {
-            <div class="qty">@Model.CartCount</div>
+            <div class="qty" style="position: absolute; right: 15px; top: -10px; background-color: #D10024; color: #FFF; font-size: 10px; font-weight: 700; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; pointer-events: none;">
+                @Model.CartCount
+            </div>
         }
     </a>
 </div>

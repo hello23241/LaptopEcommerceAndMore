@@ -1,31 +1,75 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using LaptopEcommerceAndMore.Data;
+using LaptopEcommerceAndMore.Interfaces;
 using LaptopEcommerceAndMore.Models;
 using LaptopEcommerceAndMore.ViewModels;
-using LaptopEcommerceAndMore.Interfaces;
-using System.Text.Json;
 
 namespace LaptopEcommerceAndMore.Services
 {
     public class CartService : ICartService
     {
+        private readonly ApplicationDbContext _context;
         private const string CartSessionKey = "ShoppingCart_";
 
-        public Task<ShoppingCart> GetCartAsync(HttpContext httpContext, int accountId)
+        // Inject ApplicationDbContext vào Service để làm việc trực tiếp với SQL Server
+        public CartService(ApplicationDbContext context)
         {
-            var key = CartSessionKey + accountId;
-            var session = httpContext.Session;
-            var cartJson = session.GetString(key);
-
-            if (string.IsNullOrEmpty(cartJson))
-            {
-                return Task.FromResult(new ShoppingCart { UserID = accountId, TotalItems = 0, TotalPrice = 0m });
-            }
-
-            var cart = JsonSerializer.Deserialize<ShoppingCart>(cartJson) ?? new ShoppingCart { UserID = accountId, TotalItems = 0, TotalPrice = 0m };
-            cart.TotalItems = cart.Items.Sum(x => x.Quantity);
-            cart.TotalPrice = cart.Items.Sum(x => x.Subtotal);
-            return Task.FromResult(cart);
+            _context = context;
         }
 
+        // --- ĐÃ SỬA: Đọc dữ liệu trực tiếp từ Database Azure theo UserID ---
+        public async Task<ShoppingCart> GetCartAsync(HttpContext httpContext, int accountId)
+        {
+            // 1. Tạo một đối tượng ShoppingCart rỗng để chuẩn bị chứa dữ liệu trả về giao diện
+            var shoppingCart = new ShoppingCart
+            {
+                UserID = accountId,
+                Items = new List<CartItem>(),
+                TotalItems = 0,
+                TotalPrice = 0m
+            };
+
+            // Nếu chưa đăng nhập (accountId == 0), trả về giỏ hàng trống ngay lập tức
+            if (accountId <= 0) return shoppingCart;
+
+            // 2. Truy vấn dữ liệu từ bảng Cart thật trong database, kèm thông tin bảng Products liên kết
+            var dbCartItems = await _context.Cart
+                .Include(c => c.Product)
+                .Where(c => c.UserID == accountId)
+                .ToListAsync();
+
+            // 3. Đổ (Map) dữ liệu từ thực thể bảng Cart trong database sang danh sách CartItem của ViewModel
+            foreach (var dbItem in dbCartItems)
+            {
+                if (dbItem.Product != null)
+                {
+                    var cartItem = new CartItem
+                    {
+                        ProductId = dbItem.ProductID,
+                        ProductName = dbItem.Product.ProductName,
+                        ProductImage = dbItem.Product.ProductImage,
+                        Price = dbItem.Product.BasePrice,
+                        Quantity = dbItem.Quantity,
+                        Subtotal = dbItem.Product.BasePrice * dbItem.Quantity
+                    };
+                    shoppingCart.Items.Add(cartItem);
+                }
+            }
+
+            // 4. Tính toán tổng số lượng và tổng tiền thực tế từ DB để hiển thị ở trang Cart
+            shoppingCart.TotalItems = shoppingCart.Items.Sum(x => x.Quantity);
+            shoppingCart.TotalPrice = shoppingCart.Items.Sum(x => x.Subtotal);
+
+            return shoppingCart;
+        }
+
+        // --- HANDLER: Các hàm xử lý Session phụ trợ cũ giữ nguyên cấu trúc để tránh lỗi biên dịch hệ thống ---
         public async Task AddToCartAsync(HttpContext httpContext, int accountId, CartItem item)
         {
             var cart = await GetCartAsync(httpContext, accountId);
@@ -73,7 +117,6 @@ namespace LaptopEcommerceAndMore.Services
 
             cart.TotalItems = cart.Items.Sum(x => x.Quantity);
             cart.TotalPrice = cart.Items.Sum(x => x.Subtotal);
-
             return Task.CompletedTask;
         }
 
@@ -103,7 +146,6 @@ namespace LaptopEcommerceAndMore.Services
 
             cart.TotalItems = cart.Items.Sum(x => x.Quantity);
             cart.TotalPrice = cart.Items.Sum(x => x.Subtotal);
-
             return Task.CompletedTask;
         }
 
@@ -116,4 +158,3 @@ namespace LaptopEcommerceAndMore.Services
         }
     }
 }
-

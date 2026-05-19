@@ -8,138 +8,146 @@ namespace LaptopEcommerceAndMore.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            // Đảm bảo Database đã được tạo
-            context.Database.EnsureCreated();
+            // Apply migrations and ensure database exists
+            context.Database.Migrate();
 
-            // Nếu đã có sản phẩm thì không chạy Seed để tránh trùng lặp
-            if (context.Products.Any())
-            {
-                return;
-            }
+            // Exit if data already exists
+            if (context.Products.Any()) return;
 
-            // 1. Thêm Brands (Thương hiệu)
-            var brands = new List<Brands>
+            // 1. Seed Brands (Based on your Brand Model)
+            var asus = new Brands { BrandName = "ASUS", BrandLogo = "asus_logo.png", ContactInfo = "support@asus.com", Address = "Taiwan" };
+            var dell = new Brands { BrandName = "Dell", BrandLogo = "dell_logo.png", ContactInfo = "contact@dell.com", Address = "USA" };
+            var logi = new Brands { BrandName = "Logitech", BrandLogo = "logitech_logo.png", ContactInfo = "sales@logitech.com", Address = "Switzerland" };
+            var razer = new Brands { BrandName = "Razer", BrandLogo = "razer_logo.png", ContactInfo = "info@razer.com", Address = "USA" };
+            var apple = new Brands { BrandName = "Apple", BrandLogo = "apple_logo.png", ContactInfo = "support@apple.com", Address = "USA" };
+
+            context.Brands.AddRange(asus, dell, logi, razer, apple);
+
+            // 2. Seed Categories (Including the required Description field)
+            var catLaptop = new Categories
             {
-                new Brands { BrandName = "ASUS", BrandLogo = "asus_logo.png", ContactInfo = "support@asus.com", Address = "Taiwan" },
-                new Brands { BrandName = "Dell", BrandLogo = "dell_logo.png", ContactInfo = "contact@dell.com", Address = "USA" },
-                new Brands { BrandName = "Logitech", BrandLogo = "logitech_logo.png", ContactInfo = "sales@logitech.com", Address = "Switzerland" },
-                new Brands { BrandName = "Razer", BrandLogo = "razer_logo.png", ContactInfo = "info@razer.com", Address = "USA" },
-                new Brands { BrandName = "Apple", BrandLogo = "apple_logo.png", ContactInfo = "support@apple.com", Address = "USA" }
+                CategoryName = "Laptops",
+                Slug = "laptops",
+                Icon = "fa-laptop",
+                Description = "High-performance portable computers"
             };
-            context.Brands.AddRange(brands);
-            context.SaveChanges();
+            var catAccessory = new Categories
+            {
+                CategoryName = "Accessories",
+                Slug = "accessories",
+                Icon = "fa-mouse",
+                Description = "Essential computer peripherals"
+            };
 
-            // 2. Thêm Categories (Danh mục)
-            var catLaptop = new Categories { CategoryName = "Laptops", Slug = "laptops", Icon = "fa-laptop" };
-            var catAccessory = new Categories { CategoryName = "Accessories", Slug = "accessories", Icon = "fa-mouse" };
             context.Categories.AddRange(catLaptop, catAccessory);
+
+            // Save to ensure Parent Categories have IDs
             context.SaveChanges();
 
-            var catGaming = new Categories { CategoryName = "Gaming Laptops", Slug = "gaming-laptops", ParentID = catLaptop.CategoryId };
-            var catOffice = new Categories { CategoryName = "Office Laptops", Slug = "office-laptops", ParentID = catLaptop.CategoryId };
-            var catMouse = new Categories { CategoryName = "Mouse & Keyboard", Slug = "mouse-keyboard", ParentID = catAccessory.CategoryId };
+            var catGaming = new Categories
+            {
+                CategoryName = "Gaming Laptops",
+                Slug = "gaming-laptops",
+                ParentCategory = catLaptop,
+                Description = "Laptops designed for high-end gaming",
+                Icon = "fa-gamepad"
+            };
+            var catOffice = new Categories
+            {
+                CategoryName = "Office Laptops",
+                Slug = "office-laptops",
+                ParentCategory = catLaptop,
+                Description = "Reliable laptops for daily work",
+                Icon = "fa-briefcase"
+            };
+            var catMouse = new Categories
+            {
+                CategoryName = "Mouse & Keyboard",
+                Slug = "mouse-keyboard",
+                ParentCategory = catAccessory,
+                Description = "Input devices for your setup",
+                Icon = "fa-keyboard"
+            };
+
             context.Categories.AddRange(catGaming, catOffice, catMouse);
             context.SaveChanges();
 
-            // 3. Thêm Products (3 Laptop, 2 Phụ kiện)
+            // 3. Seed Products
             var p1 = new Products
             {
                 ProductName = "ROG Zephyrus G14",
-                BrandID = brands[0].BrandId,
-                CategoryID = catGaming.CategoryId,
+                Brand = asus,
+                Category = catGaming,
                 BasePrice = 1500,
                 StockQuantity = 10,
                 ProductImage = "g14.jpg",
                 Status = "Available",
-                Description = "Quái vật gaming nhỏ gọn."
+                Description = "Powerful 14-inch gaming laptop."
             };
             var p2 = new Products
             {
                 ProductName = "Dell XPS 13",
-                BrandID = brands[1].BrandId,
-                CategoryID = catOffice.CategoryId,
+                Brand = dell,
+                Category = catOffice,
                 BasePrice = 1200,
                 StockQuantity = 15,
                 ProductImage = "xps13.jpg",
                 Status = "Available",
-                Description = "Đẳng cấp văn phòng."
+                Description = "Premium ultrabook for professionals."
             };
             var p3 = new Products
             {
                 ProductName = "MacBook Pro M3",
-                BrandID = brands[4].BrandId,
-                CategoryID = catOffice.CategoryId,
+                Brand = apple,
+                Category = catOffice,
                 BasePrice = 2000,
                 StockQuantity = 5,
                 ProductImage = "mbp.jpg",
                 Status = "Available",
-                Description = "Sức mạnh từ chip M3."
+                Description = "Next-generation Apple Silicon performance."
             };
             var p4 = new Products
             {
                 ProductName = "Logitech G Pro X",
-                BrandID = brands[2].BrandId,
-                CategoryID = catMouse.CategoryId,
+                Brand = logi,
+                Category = catMouse,
                 BasePrice = 150,
                 StockQuantity = 50,
                 ProductImage = "mouse.jpg",
                 Status = "Available",
-                Description = "Chuột gaming không dây."
-            };
-            var p5 = new Products
-            {
-                ProductName = "Razer BlackWidow",
-                BrandID = brands[3].BrandId,
-                CategoryID = catMouse.CategoryId,
-                BasePrice = 120,
-                StockQuantity = 30,
-                ProductImage = "keyboard.jpg",
-                Status = "Available",
-                Description = "Bàn phím cơ huyền thoại."
+                Description = "Pro-grade wireless gaming mouse."
             };
 
-            context.Products.AddRange(p1, p2, p3, p4, p5);
+            context.Products.AddRange(p1, p2, p3, p4);
             context.SaveChanges();
 
-            // 4. Thêm ProductDetails (Chỉ dành cho 3 Laptop)
-            context.ProductDetails.AddRange(
+            // 4. Seed ProductDetails (1:1 Relationship)
+            var details = new List<ProductDetails>
+            {
                 new ProductDetails
                 {
-                    ProductID = p1.ProductID,
-                    CPU = "AMD Ryzen 9 8945HS",
-                    RAM = "16GB DDR5",
-                    GPU = "NVIDIA RTX 4060",
-                    Display = "14 inch OLED 3K",
-                    Storage = "1TB SSD",
-                    Battery = "76Wh",
-                    Weight = "1.5kg",
-                    OS = "Windows 11"
+                    Product = p1,
+                    CPU = "AMD Ryzen 9", RAM = "16GB DDR5", GPU = "RTX 4060",
+                    Display = "14 inch OLED", Storage = "1TB SSD", Battery = "76Wh",
+                    Weight = "1.5kg", OS = "Windows 11", Extra = "Backlit Keyboard"
                 },
                 new ProductDetails
                 {
-                    ProductID = p2.ProductID,
-                    CPU = "Intel Core i7-1365U",
-                    RAM = "16GB LPDDR5",
-                    GPU = "Intel Iris Xe",
-                    Display = "13.4 inch FHD+",
-                    Storage = "512GB SSD",
-                    Battery = "51Wh",
-                    Weight = "1.2kg",
-                    OS = "Windows 11"
+                    Product = p2,
+                    CPU = "Intel Core i7", RAM = "16GB LPDDR5", GPU = "Intel Iris Xe",
+                    Display = "13.4 inch FHD+", Storage = "512GB SSD", Battery = "51Wh",
+                    Weight = "1.2kg", OS = "Windows 11", Extra = "InfinityEdge Display"
                 },
                 new ProductDetails
                 {
-                    ProductID = p3.ProductID,
-                    CPU = "Apple M3 Chip",
-                    RAM = "8GB Unified",
-                    GPU = "10-Core GPU",
-                    Display = "14.2 inch Liquid Retina",
-                    Storage = "512GB SSD",
-                    Battery = "70Wh",
-                    Weight = "1.6kg",
-                    OS = "macOS"
+                    Product = p3,
+                    CPU = "Apple M3 Chip", RAM = "8GB Unified", GPU = "10-Core GPU",
+                    Display = "14.2 inch Liquid Retina", Storage = "512GB SSD", Battery = "70Wh",
+                    Weight = "1.6kg", OS = "macOS", Extra = "Touch ID"
                 }
-            );
+            };
+
+            context.ProductDetails.AddRange(details);
             context.SaveChanges();
         }
     }

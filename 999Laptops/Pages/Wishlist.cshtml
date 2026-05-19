@@ -1,28 +1,117 @@
 @page
 @model LaptopEcommerceAndMore.Pages.WishlistModel
+@{
+    ViewData["Title"] = "My Wishlist";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
 
-<div class="row">
-    @if (Model.WishlistItems != null && Model.WishlistItems.Any())
+    var currency = HttpContext.Session.GetString("Currency") ?? "USD";
+    var isVnd = currency == "VND";
+    var rate = isVnd ? (Model.UsdToVndRate != 0 ? Model.UsdToVndRate : 25000m) : 1m;
+
+    string FormatCurrency(decimal amount)
     {
-        @foreach (var item in Model.WishlistItems)
+        if (isVnd)
         {
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5>@item.ProductName</h5>
-                        <p>@item.BasePrice.ToString("C")</p>
-                    </div>
+            if (amount >= 1000000m)
+            {
+                decimal millions = amount / 1000000m;
+                return $"{millions:0.#}M VND";
+            }
+            else
+            {
+                decimal thousands = amount / 1000m;
+                return $"{thousands:0.#}K VND";
+            }
+        }
+        else
+        {
+            return $"${amount:N2}";
+        }
+    }
+
+    string azureBaseUrl = "https://laptopimages2026.blob.core.windows.net/product-images/";
+}
+
+<div class="section">
+    <div class="container">
+        <h1 class="mb-4">My Wishlist</h1>
+
+        @if (Model.WishlistItems != null && Model.WishlistItems.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded" style="gap: 15px; flex-wrap: wrap;">
+                <div class="text-muted">You have <strong>@Model.WishlistItems.Count</strong> products in your wishlist</div>
+                <div class="d-flex gap-2">
+                    <a href="/Wishlist?sortBy=date&order=@(Model.CurrentOrder)" class="btn btn-sm @(Model.CurrentSortBy == "date" ? "btn-danger" : "btn-outline-secondary")">
+                        <i class="fa fa-calendar"></i> Date Added
+                    </a>
+                    <a href="/Wishlist?sortBy=alpha&order=@(Model.CurrentOrder)" class="btn btn-sm @(Model.CurrentSortBy == "alpha" ? "btn-danger" : "btn-outline-secondary")">
+                        <i class="fa fa-sort-alpha-asc"></i> Alphabetical
+                    </a>
+                    <span style="border-left: 2px solid #ddd; margin: 0 5px;"></span>
+                    <a href="/Wishlist?sortBy=@(Model.CurrentSortBy)&order=asc" class="btn btn-sm @(Model.CurrentOrder == "asc" ? "btn-dark" : "btn-outline-secondary")">
+                        <i class="fa fa-arrow-up"></i> Ascending
+                    </a>
+                    <a href="/Wishlist?sortBy=@(Model.CurrentSortBy)&order=desc" class="btn btn-sm @(Model.CurrentOrder == "desc" ? "btn-dark" : "btn-outline-secondary")">
+                        <i class="fa fa-arrow-down"></i> Descending
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var item in Model.WishlistItems)
+                {
+                    @if (item.Product != null)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="card h-100 style-product-card"
+                                 onclick="window.location.href='/ProductDetail/@item.Product.ProductID';"
+                                 style="border: 1px solid #E4E7ED; border-radius: 6px; overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                
+                                <div class="card-body d-flex flex-column align-items-center p-3 text-center">
+                                    <div style="width: 100%; aspect-ratio: 1 / 1; background-color: #FBFBFC; display: flex; align-items: center; justify-content: center; border: 1px solid #E4E7ED;">
+                                        @if (!string.IsNullOrEmpty(item.Product.ProductImage))
+                                        {
+                                            <img src="@(azureBaseUrl + item.Product.ProductImage.ToLower())" alt="@item.Product.ProductName" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #8D99AE; font-weight: 600;">Image</span>
+                                        }
+                                    </div>
+                                    <h5 class="mt-3 mb-1" style="font-size: 15px; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                        <span style="text-decoration: none; color: #1E1F29; font-weight:600;">@item.Product.ProductName</span>
+                                    </h5>
+                                    
+                                    <div class="mb-3" style="color: #D10024; font-weight: 700; font-size: 16px;">
+                                        @FormatCurrency(item.Product.BasePrice * rate)
+                                    </div>
+                                    
+                                    <form method="post" asp-page-handler="Remove" asp-route-id="@item.WishlistID"
+                                          onclick="event.stopPropagation();"
+                                          class="w-100 mt-auto">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="font-weight: 600;">
+                                            <i class="fa fa-trash"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-12 text-center py-5">
+                    <i class="fa fa-heart-o mb-3" style="font-size: 60px; color: #D10024;"></i>
+                    <h3 class="font-weight-bold">Your wishlist is empty</h3>
+                    <p class="text-muted">Go back to the shop and pick out your favorite products!</p>
+                    <a href="/Product/Products" class="primary-btn order-submit mt-3" style="text-decoration: none; display: inline-block; padding: 10px 20px;">Return to store</a>
                 </div>
             </div>
         }
-    }
-    else
-    {
-        <div class="col-12 text-center py-5">
-            <i class="fa fa-heart-o mb-3" style="font-size: 50px; color: #D10024;"></i>
-            <h3>Empty wishlist</h3>
-            <p>Go back to the shop and pick out your favorite products!</p>
-            <a href="/" class="btn btn-danger">Return to store</a>
-        </div>
-    }
+    </div>
 </div>

@@ -43,7 +43,7 @@
                     </div>
                     <div class="list-group shadow-sm">
                         <a href="#" class="list-group-item list-group-item-action active">Personal Information</a>
-                        <a href="#" class="list-group-item list-group-item-action">Order History</a>
+                        <a href="#orderHistorySection" class="list-group-item list-group-item-action" id="orderHistoryLink">Order History</a>
                         <a asp-page="/Account/Logout" class="list-group-item list-group-item-action text-danger">Logout</a>
                     </div>
                 </div>
@@ -54,6 +54,21 @@
                     <div class="section-title">
                         <h3 class="title">Your Profile</h3>
                     </div>
+
+                    @if (TempData["ProfileSuccess"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["ProfileSuccess"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ProfileError"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ProfileError"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
                     
                     <div class="card profile-card shadow-sm border-0">
                         <div class="card-body p-4">
@@ -93,17 +108,361 @@
                             </div>
                         </div>
                         <div class="card-footer bg-light p-4">
-                            <button class="primary-btn">Edit Profile</button>
+                            <button class="primary-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                            <button class="primary-btn" style="margin-left: 10px;" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
                         </div>
                     </div>
+
+                    <div class="card profile-card shadow-sm border-0 mt-4" id="orderHistorySection">
+                        <div class="card-body p-4">
+                            <div class="section-title">
+                                <h3 class="title">Order History</h3>
+                            </div>
+
+                            @if (Model.OrderHistory.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Order #</th>
+                                                <th>Date (UTC)</th>
+                                                <th>Status</th>
+                                                <th>Total</th>
+                                                <th>Items</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var order in Model.OrderHistory)
+                                            {
+                                                var itemNames = order.OrderDetails
+                                                    .Select(od => od.Product?.ProductName ?? "Unknown")
+                                                    .Distinct()
+                                                    .ToList();
+                                                <tr>
+                                                    <td>#@order.OrderID</td>
+                                                    <td>@order.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                                    <td>@order.Status</td>
+                                                    <td>$@order.TotalAmount.ToString("N2")</td>
+                                                    <td>
+                                                        <div style="max-width: 320px; white-space: normal;">
+                                                            @string.Join(", ", itemNames)
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-light text-center" style="border: 1px dashed #DDD;">
+                                    You haven't bought anything, go back to the store page and grab some goodies!
+                                </div>
+                            }
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header" style="background-color: #28a745; color: white;">
+                <h5 class="modal-title" id="editProfileModalLabel" style="color: white;">Edit Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <form method="post" asp-page-handler="UpdateProfile" id="editProfileForm">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control" name="EditInput.FullName" value="@Model.EditInput?.FullName" required />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">
+                            Email
+                            <i class="fa fa-question-circle text-muted" title="If this field is changed, you must verify your current email first, then verify the new one before it updates."></i>
+                        </label>
+                        <input class="form-control" type="email" name="EditInput.Email" value="@Model.EditInput?.Email" required />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input class="form-control" name="EditInput.Phone" value="@Model.EditInput?.Phone" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Address</label>
+                        <input class="form-control" name="EditInput.Address" value="@Model.EditInput?.Address" required />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="form-label">Current Password</label>
+                        <input class="form-control" type="password" name="EditInput.CurrentPassword" required />
+                    </div>
+                    <button type="button" id="btnSubmitProfile" class="btn w-100" style="background-color: #28a745; color: white;">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header" style="background-color: #D10024; color: white;">
+                <h5 class="modal-title" id="changePasswordModalLabel" style="color: white;">Change Password</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input class="form-control" type="password" name="ChangePassword.CurrentPassword" required />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">New Password</label>
+                        <input class="form-control" type="password" name="ChangePassword.NewPassword" required />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="form-label">Confirm New Password</label>
+                        <input class="form-control" type="password" name="ChangePassword.ConfirmPassword" required />
+                    </div>
+                    <button type="submit" class="btn w-100" style="background-color: #D10024; color: white;">Update Password</button>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-link p-0" id="forgotPasswordButton" style="color: #D10024; font-weight: 600;">Forgot password?</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="verifyEmailModal" tabindex="-1" aria-labelledby="verifyEmailModalLabel" aria-hidden="true" data-email-change="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header" id="verifyModalHeader" style="background-color: #007bff; color: white;">
+                <h5 class="modal-title" id="verifyEmailModalLabel" style="color: white;">Security Verification</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <div id="verifyStatusMessage" style="display: none;"></div>
+                <p class="text-center">We have sent a 6-digit verification code to:<br><strong id="displayEmail" class="text-primary" style="font-size: 16px;"></strong></p>
+                
+                <form id="modalOtpForm">
+                    <input type="hidden" id="modalVerifyEmail" class="modalVerifyEmail" />
+                    <div class="form-group mb-4">
+                        <label class="form-label d-block text-center">Enter Verification Code</label>
+                        <input class="form-control text-center" id="modalHiddenOtp" maxlength="6" placeholder="000000" style="font-size: 24px; letter-spacing: 6px; font-weight: bold; max-width: 200px; margin: 0 auto;" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="btnVerifyOtpSubmit">Verify & Continue</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <form id="profileOtpToken">
+        @Html.AntiForgeryToken()
+    </form>
+    
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Mượt mà cuộn xuống Lịch sử đơn hàng
+            const orderHistoryLink = document.getElementById('orderHistoryLink');
+            if (orderHistoryLink) {
+                orderHistoryLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const target = document.getElementById('orderHistorySection');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            }
+
+            // 2. Xử lý nút Quên mật khẩu trong Modal Thay đổi mật khẩu
+            const forgotPasswordButton = document.getElementById('forgotPasswordButton');
+            if (forgotPasswordButton) {
+                forgotPasswordButton.addEventListener('click', async function () {
+                    const tokenInput = document.querySelector('#profileOtpToken input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+                    const response = await fetch('@Url.Page("/Account/Profile", "SendPasswordOtp")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    if (!response.ok) {
+                        alert('Unable to send OTP. Please try again.');
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message || 'Unable to send OTP yet.');
+                        return;
+                    }
+
+                    const emailValue = '@Model.CurrentUser?.Email';
+                    showVerificationModal(emailValue, 'password', 'OTP sent! Please check your email to reset password.');
+                });
+            }
+
+            // --- ĐẦU NÃO ĐIỀU HƯỚNG CHUỖI XÁC THỰC HAI EMAIL ---
+            const editProfileForm = document.getElementById('editProfileForm');
+            const btnSubmitProfile = document.getElementById('btnSubmitProfile');
+            const verifyModalElement = document.getElementById('profileVerifyEmailModal');
+            const modalOtpForm = document.getElementById('modalOtpForm');
+            const modalHiddenOtp = document.getElementById('modalHiddenOtp');
+            const verifyStatusMessage = document.getElementById('verifyStatusMessage');
+            let pendingEmailChange = null;
+
+            if (btnSubmitProfile && editProfileForm) {
+                btnSubmitProfile.addEventListener('click', async function () {
+                    const emailInput = editProfileForm.querySelector('input[name="EditInput.Email"]');
+                    const currentEmail = '@Model.CurrentUser.Email';
+                    const newEmailValue = emailInput ? emailInput.value.trim() : '';
+
+                    // BƯỚC SÀNG LỌC: Nếu người dùng không sửa Email -> Cho submit thẳng ra Backend lưu DB luôn
+                    if (newEmailValue.toLowerCase() === currentEmail.toLowerCase()) {
+                        editProfileForm.submit();
+                        return;
+                    }
+
+                    // BẢO MẬT KÉP: Nếu Email bị thay đổi -> Chặn lại và ép gửi mã xác nhận đến EMAIL CŨ trước!
+                    const tokenInput = document.querySelector('#profileOtpToken input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+                    
+                    const response = await fetch('@Url.Page("/Account/Profile", "SendOldEmailOtp")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify({})
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            // Đóng modal Edit Profile lại để hiện modal OTP lên
+                            const editModalInstance = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                            if (editModalInstance) editModalInstance.hide();
+
+                            // Thiết lập cấu hình modal cho bước 1: Email cũ
+                            showVerificationModal(currentEmail, 'old', 'Security check: An OTP has been sent to your CURRENT email address.');
+                        } else {
+                            alert(result.message || 'Error requesting code for current email.');
+                        }
+                    }
+                });
+            }
+
+            // Xử lý nộp mã OTP bằng AJAX (Bắc cầu tự động từ Old sang New)
+            if (modalOtpForm && verifyModalElement) {
+                modalOtpForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    const mode = verifyModalElement.dataset.emailChange;
+                    const tokenInput = document.querySelector('#profileOtpToken input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+                    const otpValue = modalHiddenOtp ? modalHiddenOtp.value.trim() : '';
+                    
+                    // --- TRƯỜNG HỢP 1: XÁC THỰC XONG EMAIL CŨ -> BẮC CẦU SANG EMAIL MỚI ---
+                    if (mode === 'old') {
+                        const response = await fetch('@Url.Page("/Account/Profile", "ConfirmOldEmailOtp")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                            body: JSON.stringify({ email: document.getElementById('modalVerifyEmail').value, otpCode: otpValue })
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            // Xóa sạch ô OTP cũ để chuẩn bị nhận OTP mới
+                            modalHiddenOtp.value = '';
+
+                            // Lấy địa chỉ Email Mới đang kẹt trong form gốc
+                            const emailInput = editProfileForm.querySelector('input[name="EditInput.Email"]');
+                            const newEmailValue = emailInput ? emailInput.value.trim() : '';
+                            pendingEmailChange = newEmailValue;
+
+                            // BYPASS TỰ ĐỘNG: Bắn lệnh sinh OTP gửi thẳng đến Email MỚI ngay lập tức!
+                            const resNew = await fetch('@Url.Page("/Account/Profile", "SendEmailOtp")', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                                body: JSON.stringify({ email: newEmailValue })
+                            });
+
+                            const resNewResult = await resNew.json();
+                            if (resNewResult.success) {
+                                // Thay đổi giao diện Modal sang cấu hình xác thực Email Mới
+                                showVerificationModal(newEmailValue, 'new', 'Current email verified successfully! Now, enter the OTP sent to your NEW email.');
+                                document.getElementById('verifyModalHeader').style.backgroundColor = '#17a2b8'; // Đổi màu xanh lam nhạt cho phân biệt bước
+                            } else {
+                                updateStatusMessage(resNewResult.message || 'Error sending code to new email.', 'danger');
+                            }
+                        } else {
+                            updateStatusMessage(result.message || 'Invalid current email verification code.', 'danger');
+                        }
+                    }
+                    // --- TRƯỜNG HỢP 2: XÁC THỰC XONG EMAIL MỚI -> SẬP XONG SUBMIT FORM LƯU DB ---
+                    else if (mode === 'new') {
+                        const response = await fetch('@Url.Page("/Account/Profile", "ConfirmEmailChange")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                            body: JSON.stringify({ email: pendingEmailChange, otpCode: otpValue })
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            // Đóng hẳn Modal OTP
+                            const verifyModalInstance = bootstrap.Modal.getInstance(verifyModalElement);
+                            if (verifyModalInstance) verifyModalInstance.hide();
+                            
+                            // ĐÍNH VÀO VẠCH ĐÍCH: Kích hoạt lệnh ép Form chính submit lưu dữ liệu đồng loạt
+                            editProfileForm.submit();
+                        } else {
+                            updateStatusMessage(result.message || 'Invalid new email verification code.', 'danger');
+                        }
+                    }
+                });
+            }
+
+            // Hàm phụ trợ: Thiết lập và hiển thị Modal OTP chuyên nghiệp
+            function showVerificationModal(email, mode, message) {
+                document.getElementById('displayEmail').textContent = email;
+                document.getElementById('modalVerifyEmail').value = email;
+                verifyModalElement.dataset.emailChange = mode;
+                
+                if (message) {
+                    updateStatusMessage(message, 'info');
+                } else {
+                    verifyStatusMessage.style.display = 'none';
+                }
+
+                // Cấu hình lại màu Header tương ứng với các bước bảo mật
+                const header = document.getElementById('verifyModalHeader');
+                if (mode === 'old') header.style.backgroundColor = '#007bff'; // Xanh đậm cho mail cũ
+                if (mode === 'new') header.style.backgroundColor = '#17a2b8'; // Xanh cyan cho mail mới
+                if (mode === 'password') header.style.backgroundColor = '#6c757d'; // Xám cho pass
+
+                const modalInstance = bootstrap.Modal.getInstance(verifyModalElement) || new bootstrap.Modal(verifyModalElement);
+                modalInstance.show();
+            }
+
+            // Hàm phụ trợ: Cập nhật thông báo lỗi/thành công vào khung alert trong modal
+            function updateStatusMessage(text, type) {
+                verifyStatusMessage.textContent = text;
+                verifyStatusMessage.className = `alert alert-${type} text-center`;
+                verifyStatusMessage.style.display = 'block';
+                verifyStatusMessage.style.padding = '8px';
+                verifyStatusMessage.style.fontSize = '13px';
+            }
+        });
+
+        // Tính năng Đóng/Mở mắt để xem thông tin nhạy cảm (Phone/Address)
         function toggleSecret(type) {
             const textElem = document.getElementById('text' + type);
             const iconElem = document.getElementById('icon' + type);
@@ -111,12 +470,10 @@
             const maskedVal = document.getElementById('masked' + type).value;
 
             if (textElem.innerText === maskedVal) {
-                // HIỆN THÔNG TIN
                 textElem.innerText = fullVal;
                 iconElem.classList.replace('fa-eye-slash', 'fa-eye');
                 textElem.classList.replace('text-success', 'text-primary');
             } else {
-                // ẨN THÔNG TIN
                 textElem.innerText = maskedVal;
                 iconElem.classList.replace('fa-eye', 'fa-eye-slash');
                 textElem.classList.replace('text-primary', 'text-success');

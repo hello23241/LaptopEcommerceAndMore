@@ -1,220 +1,335 @@
 ﻿@page
+@model LaptopEcommerceAndMore.Pages.CheckoutModel
 @{
     ViewData["Title"] = "Checkout";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+    var currency = HttpContext.Session.GetString("Currency") ?? "USD";
+    var isVnd = currency == "VND";
+    var rate = isVnd ? Model.UsdToVndRate : 1m;
+
+    string FormatCurrency(decimal amount, bool vnd)
+    {
+        if (vnd)
+        {
+            return $"{Math.Truncate(amount):N0} VND";
+        }
+        return $"${amount:N2}";
+    }
 }
 
-<!-- BREADCRUMB -->
-<div id="breadcrumb" class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
-			<div class="col-md-12">
-				<h3 class="breadcrumb-header">Checkout</h3>
-				<ul class="breadcrumb-tree">
-					<li><a href="#">Home</a></li>
-					<li class="active">Checkout</li>
-				</ul>
-			</div>
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
-</div>
-<!-- /BREADCRUMB -->
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-<!-- SECTION -->
 <div class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
+    <div class="container">
+        <form method="post" id="checkoutForm">
+            <input type="hidden" name="countryCode" id="hiddenCountryCode" value="" />
+            <input type="hidden" name="selectedPayment" id="hiddenPaymentMethod" value="COD" />
 
-			<div class="col-md-7">
-				<!-- Billing Details -->
-				<div class="billing-details">
-					<div class="section-title">
-						<h3 class="title">Biiling Details</h3>
-					</div>
-					<form>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="First Name">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Last Name">
-						</div>
-						<div class="form-group">
-							<input class="input" type="email" placeholder="Email">
-						</div>
-						<div class="form-group">
-							<input class="input" type="tel" placeholder="Phone">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Address">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="City">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Country">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="ZIP code">
-						</div>
-					</form>
-				</div>
-				<!-- /Billing Details -->
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="billing-details">
+                        <div class="section-title"><h3 class="title">Billing Details</h3></div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Country / Region <span style="color:#D10024;">*</span></label>
+                            <select class="input" id="countrySelect" required style="border-radius: 4px; padding: 0 15px;">
+                                <option value="">-- Select your country --</option>
+                                <option value="VN">Vietnam (Domestic)</option>
+                                <option value="SG">Singapore</option>
+                                <option value="JP">Japan</option>
+                                <option value="FR">France</option>
+                                <option value="US">United States</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Full Name</label>
+                            <input class="input" type="text" value="@Model.DisplayFullName" readonly style="background-color: #f5f5f5;">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Delivery Address (Masked)</label>
+                            <input class="input" type="text" value="@Model.MaskedAddress" readonly style="background-color: #f5f5f5;">
+                        </div>
+                    </div>
+                </div>
 
-				<!-- Shipping Details -->
-				<div class="shiping-details">
-					<div class="section-title">
-						<h3 class="title">Shiping Details</h3>
-					</div>
-					<form>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="First Name">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Last Name">
-						</div>
-						<div class="form-group">
-							<input class="input" type="email" placeholder="Email">
-						</div>
-						<div class="form-group">
-							<input class="input" type="tel" placeholder="Phone">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Address">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="City">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="Country">
-						</div>
-						<div class="form-group">
-							<input class="input" type="text" placeholder="ZIP code">
-						</div>
-					</form>
-				</div>
-				<!-- /Shiping Details -->
-			</div>
+                <div class="col-md-5 order-details">
+                    <div class="section-title"><h3 class="title">Your Order</h3></div>
+                    <div class="order-summary" style="border-top: 1px solid #E4E7ED; padding-top: 15px;">
+                        <div class="order-col d-flex justify-content-between mb-2">
+                            <div>Subtotal</div>
+                            <div id="subtotalVal" data-usd="@Model.CurrentCart?.TotalPrice" style="flex: 0 0 auto; text-align: right; white-space: nowrap;">@FormatCurrency(Model.CurrentCart?.TotalPrice * rate ?? 0, isVnd)</div>
+                        </div>
+                        <div class="order-col d-flex justify-content-between mb-2">
+                            <div>Shipping Cost</div>
+                            <div id="shippingVal" data-usd="0" style="flex: 0 0 auto; text-align: right; white-space: nowrap;">@FormatCurrency(0, isVnd)</div>
+                        </div>
+                        <div class="order-col d-flex justify-content-between mt-3" style="border-top: 1px solid #E4E7ED; padding-top: 10px;">
+                            <div><strong>TOTAL</strong></div>
+                            <div><strong id="totalVal" style="color: #D10024; font-size: 20px; flex: 0 0 auto; text-align: right; white-space: nowrap;">@FormatCurrency(Model.CurrentCart?.TotalPrice * rate ?? 0, isVnd)</strong></div>
+                        </div>
+                    </div>
 
-			<div class="col-md-5 order-details">
-				<div class="section-title">
-					<h3 class="title">Your Order</h3>
-				</div>
-				<table class="checkout-table">
-					<thead>
-						<tr>
-							<th>Product</th>
-							<th>Total</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><a href="#">product name goes here</a></td>
-							<td>$980.00</td>
-						</tr>
-						<tr>
-							<td><a href="#">product name goes here</a></td>
-							<td>$980.00</td>
-						</tr>
-						<tr>
-							<td><a href="#">product name goes here</a></td>
-							<td>$980.00</td>
-						</tr>
-					</tbody>
-				</table>
-				<div class="order-summary">
-					<div class="order-col">
-						<div><strong>Subtotal</strong></div>
-						<div><strong>$2940.00</strong></div>
-					</div>
-					<div class="order-col">
-						<div>Shipping</div>
-						<div>$0.00</div>
-					</div>
-					<div class="order-col">
-						<div><strong>TOTAL</strong></div>
-						<div><strong class="order-total">$2940.00</strong></div>
-					</div>
-				</div>
+                    <div class="payment-method" style="margin-top: 25px; border-top: 1px solid #E4E7ED; padding-top: 15px;">
+                        <div class="section-title"><h4 class="title" style="font-size:16px;">Select Payment Method</h4></div>
+                        <div class="input-radio mb-2">
+                            <input type="radio" name="paymentGroup" id="method-cod" value="COD" checked>
+                            <label for="method-cod"><span></span>Cash on Delivery (COD)</label>
+                        </div>
+                        <div class="input-radio mb-2">
+                            <input type="radio" name="paymentGroup" id="method-paypal" value="PayPal">
+                            <label for="method-paypal"><span></span>International Credit Card / PayPal</label>
+                        </div>
+                        <div class="input-radio mb-2">
+                            <input type="radio" name="paymentGroup" id="method-vietqr" value="VietQR">
+                            <label for="method-vietqr"><span></span>Banking Transfer (VietQR - Instant)</label>
+                        </div>
+                    </div>
 
-				<div class="payment-method">
-					<div class="input-radio">
-						<input type="radio" name="payment" id="payment-1">
-						<label for="payment-1">
-							<span></span>
-							Direct Bank Transfer
-						</label>
-						<div class="caption">
-							<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-						</div>
-					</div>
-					<div class="input-radio">
-						<input type="radio" name="payment" id="payment-2">
-						<label for="payment-2">
-							<span></span>
-							Cheque Payment
-						</label>
-						<div class="caption">
-							<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-						</div>
-					</div>
-					<div class="input-radio">
-						<input type="radio" name="payment" id="payment-3">
-						<label for="payment-3">
-							<span></span>
-							Paypal System
-						</label>
-						<div class="caption">
-							<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-						</div>
-					</div>
-				</div>
-
-				<button class="primary-btn order-submit">Place order</button>
-			</div>
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
+                    <div class="payment-buttons-container mt-4">
+                        <button type="submit" id="btnPlaceOrderCOD" class="primary-btn order-submit w-100">Place Order (COD)</button>
+                        <div id="paypal-button-container" style="display: none; width: 100%;"></div>
+                        <button type="submit" id="btnPlaceOrderVietQR" class="btn w-100 text-white font-weight-bold" style="background-color: #005baa; padding: 12px; font-size: 14px; text-transform: uppercase; border-radius: 4px; display: none;">Scan VietQR Code</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
-<!-- /SECTION -->
 
-<!-- NEWSLETTER -->
-<div id="newsletter" class="section">
-	<!-- container -->
-	<div class="container">
-		<!-- row -->
-		<div class="row">
-			<div class="col-md-12">
-				<div class="newsletter">
-					<p>Sign Up for the <strong>NEWSLETTER</strong></p>
-					<form>
-						<input class="input" type="email" placeholder="Enter Your Email">
-						<button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
-					</form>
-					<ul class="newsletter-follow">
-						<li>
-							<a href="#"><i class="fa fa-facebook"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-twitter"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-instagram"></i></a>
-						</li>
-						<li>
-							<a href="#"><i class="fa fa-pinterest"></i></a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<!-- /row -->
-	</div>
-	<!-- /container -->
+<div class="modal fade" id="vietQrModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 8px; border: none; box-shadow: 0 5px 25px rgba(0,0,0,0.2);">
+            <div class="modal-header bg-primary text-white" style="border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #005baa !important;">
+                <h5 class="modal-title font-weight-bold" style="color:#FFF;"><i class="fa fa-qrcode"></i> Scan QR to Pay</h5>
+            </div>
+            <div class="modal-body text-center p-4">
+                <p class="text-muted mb-3" style="font-size: 13px;">Please open your banking app to scan the VietQR code below.</p>
+                
+                <div class="mb-3 p-2 bg-white d-inline-block" style="border: 1px solid #E4E7ED; border-radius: 4px;">
+                    <img id="modalQrImg" src="" alt="VietQR" style="max-width: 260px; height: auto;" />
+                </div>
+
+                <div class="p-3 mb-3 text-start bg-light rounded" style="font-size: 13px; border-left: 4px solid #005baa;">
+                    <div><strong>Amount:</strong> <span id="modalAmountVnd" class="text-danger font-weight-bold"></span></div>
+                    <div><strong>Content:</strong> <span id="modalContent" class="text-primary font-weight-bold"></span></div>
+                </div>
+
+                <div class="alert alert-warning py-2 mb-0" style="font-size: 13px; font-weight: 600;">
+                    <i class="fa fa-clock-o"></i> Transaction expires in: <span id="countdownTimer" class="text-danger">10:00</span>
+                </div>
+            </div>
+            <div class="modal-footer bg-light" style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnCancelQr" data-bs-dismiss="modal">Cancel Transaction</button>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- /NEWSLETTER -->
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-5" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div class="mb-3">
+                <i class="fa fa-check-circle" style="font-size: 80px; color: #28a745;"></i>
+            </div>
+            <h2 class="font-weight-bold mb-2" style="color: #1E1F29;">Purchase Successful!</h2>
+            <p class="text-muted mb-4">Thank you for your order. Your transaction has been verified successfully by our banking system.</p>
+            <button type="button" class="primary-btn order-submit w-100" onclick="window.location.href='/Index';">Back to Home</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const countrySelect = document.getElementById("countrySelect");
+    const shippingVal = document.getElementById("shippingVal");
+    const totalVal = document.getElementById("totalVal");
+    const subtotalVal = document.getElementById("subtotalVal");
+        
+    const hiddenCountryCode = document.getElementById("hiddenCountryCode");
+    const hiddenPaymentMethod = document.getElementById("hiddenPaymentMethod");
+    const checkoutForm = document.getElementById("checkoutForm");
+
+    const btnCOD = document.getElementById("btnPlaceOrderCOD");
+    const containerPayPal = document.getElementById("paypal-button-container");
+    const btnVietQR = document.getElementById("btnPlaceOrderVietQR");
+
+    const isVnd = @isVnd.ToString().ToLower();
+    const exchangeRate = isVnd ? @Model.UsdToVndRate : 1;
+
+    let orderCheckInterval; // Biến chạy ngầm kiểm tra DB
+    let countdownInterval;  // Biến chạy đếm ngược 10 phút
+
+    function formatCurrency(amount, vnd) {
+    if (vnd) return Math.trunc(amount).toLocaleString() + " VND";
+    return "$" + amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    countrySelect.addEventListener("change", function () {
+    const country = this.value;
+    hiddenCountryCode.value = country;
+    if (!country) return;
+
+    fetch(`/Checkout?handler=ShippingCost&countryCode=${country}`)
+    .then(res => res.json())
+    .then(data => {
+    if (data.success) {
+    let shipUsd = data.cost;
+    shippingVal.setAttribute("data-usd", shipUsd);
+    let subtotalUsd = parseFloat(subtotalVal.getAttribute("data-usd"));
+    let totalUsd = subtotalUsd + shipUsd;
+    shippingVal.innerText = formatCurrency(shipUsd * exchangeRate, isVnd);
+    totalVal.innerText = formatCurrency(totalUsd * exchangeRate, isVnd);
+    }
+    });
+    });
+
+    const paymentRadios = document.querySelectorAll('input[name="paymentGroup"]');
+    paymentRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+    const method = this.value;
+    hiddenPaymentMethod.value = method;
+    btnCOD.style.display = 'none';
+    containerPayPal.style.display = 'none';
+    btnVietQR.style.display = 'none';
+
+    if (method === 'COD') btnCOD.style.display = 'block';
+    else if (method === 'PayPal') containerPayPal.style.display = 'block';
+    else if (method === 'VietQR') btnVietQR.style.display = 'block';
+    });
+    });
+
+    // --- LUỒNG CHÍNH: CHẶN SUBMIT FORM ĐỂ XỬ LÝ BACKGROUND THEO THỜI GIAN THỰC ---
+    checkoutForm.addEventListener("submit", function(e) {
+    e.preventDefault(); // Chặn cứng tải lại trang
+            
+    if(!countrySelect.value) {
+    alert("Please select your Country / Region!");
+    return;
+    }
+
+    const formData = new FormData(checkoutForm);
+            
+    // Đẩy yêu cầu POST lên C# ngầm bằng AJAX Fetch
+    fetch(`/Checkout?handler=PlaceOrder`, {
+    method: "POST",
+    body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+    if (data.success) {
+    if (data.isVietQR) {
+    // Nạp dữ liệu vào cấu trúc Modal QR
+    document.getElementById("modalQrImg").src = data.qrUrl;
+    document.getElementById("modalAmountVnd").innerText = data.amountVnd.toLocaleString() + " VND";
+    document.getElementById("modalContent").innerText = data.content;
+
+    // Bật mở Bootstrap Modal QR lên hiện trường
+    const qrModal = new bootstrap.Modal(document.getElementById('vietQrModal'));
+    qrModal.show();
+
+    // Kích hoạt 2 bộ đếm chạy ngầm đồng thời
+    startCountdown(10 * 60); // Đếm ngược 10 phút (600 giây)
+    startOrderStatusChecker(data.orderId); // Cứ 3 giây quét DB xem bạn đã sửa Status thành "Paid" hay chưa
+    } else {
+    // Nếu là COD, điều hướng sang trang chủ báo thành công luôn
+    window.location.href = data.redirectUrl;
+    }
+    }
+    });
+    });
+
+    // --- BỘ ĐẾM 1: ĐẾM NGƯỢC THỜI GIAN HẾT HẠN (10 PHÚT) ---
+    function startCountdown(durationSeconds) {
+    clearInterval(countdownInterval);
+    let timer = durationSeconds;
+    const display = document.getElementById("countdownTimer");
+
+    countdownInterval = setInterval(function () {
+    let minutes = parseInt(timer / 60, 10);
+    let seconds = parseInt(timer % 60, 10);
+
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    display.innerText = minutes + ":" + seconds;
+
+    if (--timer < 0) {
+    clearInterval(countdownInterval);
+    clearInterval(orderCheckInterval);
+    display.innerText = "EXPIRED";
+    alert("Transaction session has expired. Please place a new order.");
+    document.getElementById("btnCancelQr").click();
+    }
+    }, 1000);
+    }
+
+    // --- BỘ ĐẾM 2: QUÉT CƠ SỞ DỮ LIỆU ĐỌC TRẠNG THÁI REAL-TIME (CỨ 3 GIÂY) ---
+    function startOrderStatusChecker(orderId) {
+    clearInterval(orderCheckInterval);
+            
+    orderCheckInterval = setInterval(function() {
+    fetch(`/Checkout?handler=CheckOrderStatus&orderId=${orderId}`)
+    .then(res => res.json())
+    .then(data => {
+    // Mẹo test đồ án: Bạn chỉ cần vào bảng Orders, sửa tay cột Status của dòng đó từ "Awaiting Transfer" thành "Paid" là JS lập tức bắt được quả tang!
+    if (data.success && (data.status === "Paid" || data.status === "Paid / Processing")) {
+    // Tắt sạch các bộ đếm ngầm để không ngốn RAM máy tính
+    clearInterval(orderCheckInterval);
+    clearInterval(countdownInterval);
+
+    // 1. Tắt Modal QR cũ đi
+    const qrModalElement = document.getElementById('vietQrModal');
+    const qrModal = bootstrap.Modal.getInstance(qrModalElement);
+    if (qrModal) qrModal.hide();
+
+    // 2. Bật mở Modal Thành công xịn đét lên thay thế
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    successModal.show();
+
+    // 3. KÍCH HOẠT HIỆU ỨNG PHÁO HOA ĐẰNG SAU HOÀNH TRÁNG
+    triggerFireworks();
+    }
+    });
+    }, 3000); // Tần suất quét: 3 giây/lần
+    }
+
+    // Hàm bắn pháo hoa liên tục trong 3 giây ăn mừng nộp bài đồ án
+    function triggerFireworks() {
+    var duration = 3 * 1000;
+    var end = Date.now() + duration;
+
+    (function frame() {
+    confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 } });
+    confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 } });
+
+    if (Date.now() < end) {
+    requestAnimationFrame(frame);
+    }
+    }());
+    }
+
+    // Hủy bộ đếm quét ngầm nếu người dùng chủ động tắt modal QR thủ công
+    document.getElementById("vietQrModal").addEventListener('hidden.bs.modal', function () {
+    clearInterval(orderCheckInterval);
+    clearInterval(countdownInterval);
+    });
+
+    // PayPal SDK giữ nguyên
+    paypal.Buttons({
+    createOrder: function(data, actions) {
+    if(!countrySelect.value) { alert('Please select your Country / Region first!'); return false; }
+    let subtotal = parseFloat(subtotalVal.getAttribute("data-usd"));
+    let shipping = parseFloat(shippingVal.getAttribute("data-usd"));
+    return actions.order.create({ purchase_units: [{ amount: { value: (subtotal + shipping).toFixed(2), currency_code: 'USD' } }] });
+    },
+    onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+    let subtotal = parseFloat(subtotalVal.getAttribute("data-usd"));
+    let shipping = parseFloat(shippingVal.getAttribute("data-usd"));
+    window.location.href = `/Checkout?handler=PayPalSuccess&countryCode=${countrySelect.value}&totalUsd=${subtotal + shipping}&payPalOrderId=${data.orderID}`;
+    });
+    }
+    }).render('#paypal-button-container');
+    });
+</script>

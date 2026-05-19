@@ -5,8 +5,8 @@ namespace LaptopEcommerceAndMore.Interfaces
     public interface IDataService
     {
         Task<List<Products>> GetAllProductsAsync();
-        Task<List<Products>> GetProductsPageAsync(int pageNumber, int pageSize);
-        Task<int> GetProductCountAsync();
+        Task<List<Products>> GetProductsPageAsync(int pageNumber, int pageSize, int? categoryId = null, int? brandId = null);
+        Task<int> GetProductCountAsync(int? categoryId = null, int? brandId = null);
         Task<Products> GetProductByIdAsync(int id);
         Task AddProductAsync(Products product);
         Task UpdateProductAsync(Products product);

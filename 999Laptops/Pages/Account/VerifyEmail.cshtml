@@ -49,7 +49,6 @@
         letter-spacing: 1px;
     }
 
-    /* Thêm style cho nút link g?i l?i */
     .resend-link {
         color: #D10024;
         font-weight: bold;
@@ -85,7 +84,7 @@
                             </div>
                         }
 
-                        <p class="text-muted">Mã OTP dã du?c g?i d?n hòm thu <br /><strong>@Model.Email</strong></p>
+                        <p class="text-muted">Code resent!<br /><strong>@Model.Email</strong></p>
                     </div>
 
                     <form method="post" id="otpForm">
@@ -103,24 +102,24 @@
                             <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" required />
                         </div>
 
-                        <button type="submit" class="primary-btn">XÁC NH?N TÀI KHO?N</button>
+                        <button type="submit" class="primary-btn">VERIFY EMAIL</button>
                     </form>
 
                     <div class="mt-4">
                         @if (Model.ShowResend)
                         {
                             <p class="text-muted">
-                                Không nh?n du?c mã?
+                                Didn't recieve a code?
                                 <form asp-page-handler="Resend" method="post" style="display:inline;">
                                     <input type="hidden" asp-for="Email" />
-                                    <button type="submit" class="resend-link">G?i l?i ngay</button>
+                                    <button type="submit" class="resend-link">Resend code</button>
                                 </form>
                             </p>
                         }
                         else
                         {
                             <p class="text-muted" style="font-size: 13px; font-style: italic;">
-                                <i class="fa fa-clock-o"></i> Vui lòng d?i mã h?t h?n d? yêu c?u g?i l?i.
+                                <i class="fa fa-clock-o"></i>Please wait before resending the code again.
                             </p>
                         }
                     </div>

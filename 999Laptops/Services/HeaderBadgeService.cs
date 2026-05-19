@@ -1,95 +1,34 @@
 using LaptopEcommerceAndMore.Interfaces;
+using LaptopEcommerceAndMore.Data; // Thêm namespace chứa DbContext của bạn
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LaptopEcommerceAndMore.Services
 {
-    public class HeaderBadgeService(IHttpContextAccessor httpContextAccessor) : IHeaderBadgeService
+    public class HeaderBadgeService : IHeaderBadgeService
     {
-        private const string WishlistCountKey = "WishlistCount";
-        private const string CartCountKey = "CartCount";
-        private const string InitializedKey = "BadgeCountsInitialized";
-        private const int DefaultWishlistCount = 0;
-        private const int DefaultCartCount = 0;
-        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly ApplicationDbContext _context;
 
-        public Task<int> GetWishlistCountAsync() => Task.FromResult(GetCount(WishlistCountKey, DefaultWishlistCount));
-        public Task<int> GetCartCountAsync() => Task.FromResult(GetCount(CartCountKey, DefaultCartCount));
-
-        public Task IncrementWishlistCountAsync()
+        public HeaderBadgeService(ApplicationDbContext context)
         {
-            IncrementCount(WishlistCountKey, DefaultWishlistCount);
-            return Task.CompletedTask;
+            _context = context;
         }
 
-        public Task IncrementCartCountAsync()
+        // Đếm số loại sản phẩm trong mục yêu thích (ví dụ: thích 3 máy laptop khác nhau -> hiện số 3)
+        public async Task<int> GetWishlistCountAsync(int userId)
         {
-            IncrementCount(CartCountKey, DefaultCartCount);
-            return Task.CompletedTask;
+            return await _context.Wishlist
+                .Where(w => w.UserID == userId)
+                .CountAsync();
         }
 
-        public Task DecrementWishlistCountAsync()
+        // Tính tổng số lượng của tất cả vật phẩm trong giỏ (ví dụ: mua 2 máy Dell, 1 máy HP -> hiện số 3)
+        public async Task<int> GetCartCountAsync(int userId)
         {
-            DecrementCount(WishlistCountKey, DefaultWishlistCount);
-            return Task.CompletedTask;
+            return await _context.Cart
+                .Where(c => c.UserID == userId)
+                .SumAsync(c => (int?)c.Quantity) ?? 0; // Tránh lỗi nếu giỏ hàng trống trơn
         }
-
-        public Task DecrementCartCountAsync()
-        {
-            DecrementCount(CartCountKey, DefaultCartCount);
-            return Task.CompletedTask;
-        }
-
-        private int GetCount(string key, int defaultValue)
-        {
-            var session = GetSession();
-            if (session == null)
-            {
-                return defaultValue;
-            }
-
-            EnsureInitialized(session);
-            return session.GetInt32(key) ?? defaultValue;
-        }
-
-        private void IncrementCount(string key, int defaultValue)
-        {
-            var session = GetSession();
-            if (session == null)
-            {
-                return;
-            }
-
-            EnsureInitialized(session);
-            var current = session.GetInt32(key) ?? defaultValue;
-            session.SetInt32(key, current + 1);
-        }
-
-        private void DecrementCount(string key, int defaultValue)
-        {
-            var session = GetSession();
-            if (session == null)
-            {
-                return;
-            }
-
-            EnsureInitialized(session);
-            var current = session.GetInt32(key) ?? defaultValue;
-            var next = Math.Max(0, current - 1);
-            session.SetInt32(key, next);
-        }
-
-        private void EnsureInitialized(ISession session)
-        {
-            if (session.GetInt32(InitializedKey) == 1)
-            {
-                return;
-            }
-
-            session.SetInt32(WishlistCountKey, DefaultWishlistCount);
-            session.SetInt32(CartCountKey, DefaultCartCount);
-            session.SetInt32(InitializedKey, 1);
-        }
-
-        private ISession? GetSession() => _httpContextAccessor.HttpContext?.Session;
     }
 }
-

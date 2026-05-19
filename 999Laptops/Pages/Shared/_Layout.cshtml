@@ -25,26 +25,48 @@
         <div id="top-header">
             <div class="container">
                 <ul class="header-links pull-left">
-                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
-                    <li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
+                    <li><a href="#"><i class="fa fa-phone"></i>0816-076-311</a></li>
+                    <li><a href="#"><i class="fa fa-envelope-o"></i>nhankiet1705@gmail.com</a></li>
+                    <li><a href="#"><i class="fa fa-map-marker"></i>113 Nguyen Ai Quoc St.</a></li>
                 </ul>
+
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-                    <li><a asp-page="/Compare"><i class="fa fa-exchange"></i> Compare</a></li>
+                    @{
+                        // Đọc trạng thái loại tiền tệ hiện tại từ Session (Mặc định là USD)
+                        var currentCurrency = Context.Session.GetString("Currency") ?? "USD";
+                        
+                        // Tính toán loại tiền tệ tiếp theo khi click
+                        var nextCurrency = currentCurrency == "USD" ? "VND" : "USD";
+                        
+                        // Đồng bộ Icon: Đô la cho USD, Ví/Tiền cho VND
+                        var currencyIcon = currentCurrency == "USD" ? "fa-dollar" : "fa-money";
+                    }
+                    
+                    <li>
+                        <a href="/Account/ChangeCurrency?currency=@nextCurrency&returnUrl=@Context.Request.Path@Context.Request.QueryString"
+                               title="Click to switch to @nextCurrency"
+                               style="cursor: pointer;">
+                            <i class="fa @currencyIcon"></i> @currentCurrency
+                        </a>
+                    </li>
+
                     @if (!string.IsNullOrEmpty(userId))
                     {
                         <li><a asp-page="/Account/Profile"><i class="fa fa-user-o"></i> @fullName</a></li>
-                        <li>
-                            <a asp-page="/Account/Login" asp-page-handler="Logout" asp-route-returnUrl="@currentPath">
-                                <i class="fa fa-sign-out"></i> Logout
-                            </a>
-                        </li>
+                        <li><a asp-page="/Account/Login" asp-page-handler="Logout" asp-route-returnUrl="@currentPath"><i class="fa fa-sign-out"></i> Logout</a></li>
                     }
                     else
                     {
-                        <li><a asp-page="/Account/Login" asp-route-returnUrl="@currentPath"><i class="fa fa-user-o"></i> Login</a></li>
-                        <li><a asp-page="/Account/Register"><i class="fa fa-pencil"></i> Register</a></li>
+                        <li>
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fa fa-user-o"></i> Login
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                <i class="fa fa-pencil"></i> Register
+                            </a>
+                        </li>
                     }
                 </ul>
             </div>
@@ -56,7 +78,7 @@
                     <div class="col-md-3">
                         <div class="header-logo">
                             <a href="/" class="logo">
-                                <img src="~/img/logo.png" alt="Logo">
+                                <img src="~/img/logo.png" alt="Logo" width="169" height="70" style="object-fit: cover; object-position: center;">
                             </a>
                         </div>
                     </div>
@@ -121,13 +143,156 @@
             <div class="container">
                 <div class="row text-center">
                     <span class="copyright">
-                        Copyright &copy; @DateTime.Now.Year All rights reserved
+                        Copyright &copy; @DateTime.UtcNow.Year All rights reserved
                     </span>
                 </div>
             </div>
         </div>
     </footer>
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 10px; overflow: hidden;">
+                <div class="modal-header" style="background-color: #D10024; color: white;">
+                    <h5 class="modal-title" id="loginModalLabel" style="color: white;">Login to Your Account</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 30px;">
+                    <!-- Lưu ý: asp-page trỏ về trang Account/Login để xử lý OnPost -->
+                    <form method="post" asp-page="/Account/Login">
+                        <div class="form-group mb-3">
+                            <label class="form-label">Username</label>
+                            <input name="Input.Username" class="form-control" placeholder="Enter your username" required />
+                        </div>
 
+                        <div class="form-group mb-4">
+                            <label class="form-label">Password</label>
+                            <input name="Input.Password" type="password" class="form-control" placeholder="Enter your password" required />
+                        </div>
+
+                        <!-- Hidden input để sau khi login xong quay lại đúng trang cũ -->
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                        <button type="submit" class="btn w-100 mb-3" style="background-color: #D10024; color: white;">Login</button>
+                    </form>
+                    <p class="text-center mb-0">Don't have an account? <a asp-page="/Account/Register" style="color: #D10024;">Register here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 10px; overflow: hidden;">
+                <div class="modal-header" style="background-color: #28a745; color: white;">
+                    <h5 class="modal-title" id="registerModalLabel" style="color: white;">Create a New Account</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 30px;">
+                    <form method="post" asp-page="/Account/Register" id="modalRegisterForm">
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+    
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Username</label>
+                                    <input name="Input.Username" class="form-control" required />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Password</label>
+                                    <input name="Input.Password" type="password" id="modalPasswordInput" class="form-control" required />
+                                    <div id="modal-password-requirements" class="mt-2 small p-2 bg-light rounded">
+                                        <div id="m-req-length" class="text-danger">✘ At least 8 characters</div>
+                                        <div id="m-req-upper" class="text-danger">✘ 1 capital letter (A-Z)</div>
+                                        <div id="m-req-number" class="text-danger">✘ 1 digit (0-9)</div>
+                                        <div id="m-req-special" class="text-danger">✘ 1 special character</div>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Email</label>
+                                    <input name="Input.Email" type="email" class="form-control" required />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Confirm Password</label>
+                                    <input type="password" id="modalConfirmPassword" name="ConfirmPassword" class="form-control" required />
+                                   
+                                    <div id="passwordMatchMessage" class="mt-2 small p-2 rounded" style="font-weight: 600; min-height: 38px; border: 1px solid transparent;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Full Name</label>
+                                    <input name="Input.FullName" class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label font-weight-bold">Phone Number</label>
+                                    <input name="Input.Phone" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                       
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold">Address</label>
+                            <input name="Input.Address" class="form-control" required />
+                        </div>
+                    
+                        <button type="submit" id="btnRegisterSubmit" class="btn btn-success w-100 mt-3 py-2 font-weight-bold">REGISTER</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Verify Email Modal -->
+    <div class="modal fade" id="profileVerifyEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="verifyEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header" style="background-color: #D10024; color: white;">
+                    <h5 class="modal-title" id="verifyEmailModalLabel" style="color: white;">Email verification</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 30px; text-align: center;">
+                
+                    <!-- Status Message Area -->
+                    <div id="verifyStatusMessage"></div>
+
+                    <p class="text-muted">OTP has been sent to your email<br /><strong id="displayEmail"></strong></p>
+
+                    <form method="post" asp-page="/Account/VerifyEmail" id="modalOtpForm">
+                        <input type="hidden" name="Email" id="modalVerifyEmail" />
+                        <input type="hidden" name="OtpCode" id="modalHiddenOtp" />
+
+                        <div class="otp-inputs" style="display: flex; justify-content: center; gap: 10px; margin: 25px 0;">
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                            <input type="text" class="otp-field" maxlength="1" pattern="\d*" inputmode="numeric" style="width: 45px; height: 55px; font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #ddd; border-radius: 8px;" required />
+                        </div>
+
+                        <button type="submit" class="primary-btn" style="width: 100%; background-color: #D10024; color: white; border: none; padding: 10px; font-weight: bold;">VERIFY ACCOUNT</button>
+                    </form>
+                    <div class="mt-4">
+                        <p class="text-muted" style="font-size: 14px;">
+                            Didn't recieve the code?
+                            <form asp-page="/Account/VerifyEmail" asp-page-handler="Resend" method="post" style="display:inline;">
+                                <input type="hidden" name="Email" class="modalVerifyEmail" />
+                                <button type="submit" class="resend-link" style="color: #D10024; background: none; border: none; text-decoration: underline; font-weight: bold;">Resend now</button>
+                            </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/slick.min.js"></script>

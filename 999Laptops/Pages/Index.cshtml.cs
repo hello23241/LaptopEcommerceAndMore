@@ -5,9 +5,9 @@ namespace LaptopEcommerceAndMore.Pages
 {
     public class IndexModel : PageModel
     {
-        public void OnGet()
+        public IActionResult OnGet()
         {
-
+            return RedirectToPage("/Product/Products");
         }
     }
 }

@@ -1,13 +1,10 @@
+using System.Threading.Tasks;
+
 namespace LaptopEcommerceAndMore.Interfaces
 {
     public interface IHeaderBadgeService
     {
-        Task<int> GetWishlistCountAsync();
-        Task<int> GetCartCountAsync();
-        Task IncrementWishlistCountAsync();
-        Task IncrementCartCountAsync();
-        Task DecrementWishlistCountAsync();
-        Task DecrementCartCountAsync();
+        Task<int> GetWishlistCountAsync(int userId);
+        Task<int> GetCartCountAsync(int userId);
     }
 }
-

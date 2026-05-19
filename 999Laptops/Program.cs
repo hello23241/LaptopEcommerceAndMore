@@ -2,23 +2,32 @@ using Microsoft.EntityFrameworkCore;
 using LaptopEcommerceAndMore.Data;
 using LaptopEcommerceAndMore.Services;
 using LaptopEcommerceAndMore.Interfaces;
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. ĐĂNG KÝ SQL SERVER ---
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// --- 0. CẤU HÌNH AZURE KEY VAULT (CHỈ CHẠY TRÊN CLOUD) ---
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUri = new Uri("https://laptop-ecom-vault-2026.vault.azure.net/");
+    builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+}
 
-// Add services to the container.
+// --- 1. REGISTER SQL SERVER (SỬA ĐỂ ĐỌC TRỰC TIẾP KEY MÃ HÓA) ---
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration["ConnectionStrings--DefaultConnection"]
+                       ?? builder.Configuration["ConnectionStrings:DefaultConnection"]));
+
+// [Giữ nguyên đoạn Register Services của bạn...]
 var mvcBuilder = builder.Services.AddControllersWithViews();
 mvcBuilder.AddViewComponentsAsServices();
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AllowAnonymousToPage("/Account/Cart");
+    options.Conventions.AllowAnonymousToPage("/Cart");
 });
-// --- 2. THAY THẾ IN-MEMORY BẰNG SQL SERVICE ---
-builder.Services.AddScoped<IDataService, DataService>();
 
+builder.Services.AddScoped<IDataService, DataService>();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -32,34 +41,27 @@ builder.Services.AddScoped<ICompareService, CompareService>();
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
+
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-       options.LoginPath = "/Account/Login";
+        options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-    });
 
+        options.Cookie.Path = "/";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/Admin", "AdminOnly");
+});
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseSession();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Product}/{action=Index}/{id?}");
-app.MapControllers();
-app.MapRazorPages();
+// --- 3. SEED DATA INITIALIZATION ---
+/*
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -70,11 +72,36 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred during database initialization.");
-    }
+        var message = ex.InnerException?.Message ?? ex.Message;
+        Console.WriteLine("SEED ERROR: " + message);
+        // Lưu ý: Trên Cloud, nếu Seed lỗi có thể làm App không Start được. 
+        // Hãy đảm bảo Migration đã được chạy thành công trước đó.
+    }var builder = WebApplication
+}
+*/
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
-app.Run();
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseCookiePolicy();
+app.UseSession();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Product}/{action=Index}/{id?}");
+
+app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
